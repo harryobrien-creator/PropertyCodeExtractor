@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LE Code Extractor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+:root {
+  --bg: #0e0e0e;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: #2a2a2a;
+  --accent: #e8ff47;
+  --accent2: #ff6b35;
+  --text: #f0f0f0;
+  --muted: #666;
+  --green: #4ade80;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+}
+
+#uploadScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 28px;
+  padding: 40px;
+}
+
+#uploadScreen h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -1px;
+}
+
+#uploadScreen p {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  max-width: 380px;
+  line-height: 1.7;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  padding: 56px 80px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(232,255,71,0.04);
+}
+
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.drop-icon { font-size: 38px; margin-bottom: 12px; display: block; }
+.drop-label { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.drop-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+.parsing-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 200;
+}
+.parsing-overlay.show { display: flex; }
+.spinner {
+  width: 34px; height: 34px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.parsing-msg { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
+
+#appScreen { display: none; }
+
+header {
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+header h1 { font-size: 19px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+.file-badge {
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.25);
+  border-radius: 20px;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 3px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.file-badge .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+.reload-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.reload-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.layout {
+  display: grid;
+  grid-template-columns: 295px 1fr;
+  min-height: calc(100vh - 63px);
+}
+
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  max-height: calc(100vh - 63px);
+  position: sticky;
+  top: 0;
+}
+
+.section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+.region-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+
+.toggle-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: all 0.14s;
+  text-align: center;
+}
+.toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+.toggle-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+.toggle-btn.hero:hover { border-color: var(--accent2); color: var(--accent2); }
+.toggle-btn.hero.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+input[type="date"] {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 7px 9px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.14s;
+  color-scheme: dark;
+}
+input[type="date"]:focus { border-color: var(--accent); }
+
+.count-row { display: flex; align-items: center; gap: 10px; }
+.count-row label { margin: 0; white-space: nowrap; }
+input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+.count-val { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--accent); min-width: 26px; text-align: right; }
+
+.hero-sliders { display: flex; flex-direction: column; gap: 8px; }
+.hero-slider-row { display: flex; align-items: center; gap: 8px; }
+.hero-slider-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  width: 46px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.hero-slider-label.active-hero { color: var(--accent2); }
+.hero-slider-row input[type="range"] { flex: 1; accent-color: var(--accent2); }
+.hero-slider-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); min-width: 22px; text-align: right; }
+
+.mode-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.mode-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 7px 3px;
+  cursor: pointer;
+  transition: all 0.14s;
+  text-align: center;
+}
+.mode-btn.active { background: var(--surface2); color: var(--text); }
+
+.run-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 13px;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.5px;
+  transition: all 0.14s;
+}
+.run-btn:hover { background: #d4eb30; transform: translateY(-1px); }
+.run-btn:active { transform: translateY(0); }
+
+.main { padding: 22px 30px; display: flex; flex-direction: column; gap: 20px; }
+
+.stats-bar { display: flex; gap: 20px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-val { font-family: 'DM Mono', monospace; font-size: 24px; color: var(--accent); }
+.stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.divider { width: 1px; background: var(--border); }
+
+.output-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.output-title { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.format-note { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+
+.copy-btn {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: all 0.14s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #000; }
+
+.code-output {
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--accent);
+  word-break: break-all;
+  min-height: 80px;
+  white-space: pre-wrap;
+}
+.code-output.empty {
+  color: var(--muted);
+  font-size: 13px;
+  font-family: 'Syne', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  word-break: normal;
+}
+
+.breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 10px; }
+.breakdown-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.card-header {
+  padding: 9px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-region { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); }
+.card-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+
+.card-row {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 6px;
+  padding: 5px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  align-items: start;
+}
+.card-row:last-child { border-bottom: none; }
+.card-date { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; padding-top: 2px; }
+.card-codes { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.code-chip {
+  background: rgba(232,255,71,0.07);
+  border: 1px solid rgba(232,255,71,0.18);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.code-chip:hover { background: rgba(232,255,71,0.18); }
+.hero-tag { font-size: 9px; color: var(--accent2); margin-right: 3px; opacity: 0.8; }
+
+.tooltip {
+  position: fixed;
+  background: var(--accent);
+  color: #000;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  transform: translate(-50%, -160%);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.tooltip.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- UPLOAD SCREEN -->
+<div id="uploadScreen">
+  <h1>LE CODE EXTRACTOR</h1>
+  <p>Upload your Daily Email Schedule .xlsx — it'll extract property codes from Hero 1–4 across all regions.</p>
+  <div class="drop-zone" id="dropZone">
+    <input type="file" accept=".xlsx" id="fileInput" />
+    <span class="drop-icon">📂</span>
+    <div class="drop-label">Drop your .xlsx here</div>
+    <div class="drop-sub">or click to browse · works offline</div>
+  </div>
+</div>
+
+<!-- PARSING OVERLAY -->
+<div class="parsing-overlay" id="parsingOverlay">
+  <div class="spinner"></div>
+  <div class="parsing-msg" id="parsingMsg">Reading spreadsheet...</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appScreen">
+  <header>
+    <div class="header-left">
+      <h1>LE CODE EXTRACTOR</h1>
+      <div class="file-badge"><div class="dot"></div><span id="fileNameBadge">file.xlsx</span></div>
+    </div>
+    <button class="reload-btn" onclick="reloadFile()">&#8593; Upload New File</button>
+  </header>
+
+  <div class="layout">
+    <div class="sidebar">
+
+      <div>
+        <div class="section-label">Region</div>
+        <div class="region-grid" id="regionGrid"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Hero Positions</div>
+        <div class="hero-grid" id="heroGrid"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Date Range</div>
+        <div class="date-row">
+          <div><label>From</label><input type="date" id="dateFrom" /></div>
+          <div><label>To</label><input type="date" id="dateTo" /></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Max Results per Hero</div>
+        <div class="hero-sliders" id="heroSliders"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Order</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="orderChron" onclick="setOrder('chrono',this)">Most Recent First</button>
+          <button class="mode-btn" id="orderRand" onclick="setOrder('random',this)">Randomised</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Output Format</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" onclick="setMode('comma',this)">code, code</button>
+          <button class="mode-btn" onclick="setMode('newline',this)">per line</button>
+          <button class="mode-btn" onclick="setMode('json',this)">JSON</button>
+        </div>
+      </div>
+
+      <button class="run-btn" onclick="runExtract()">EXTRACT CODES</button>
+    </div>
+
+    <div class="main">
+      <div class="stats-bar" id="statsBar" style="display:none">
+        <div class="stat"><div class="stat-val" id="statCodes">0</div><div class="stat-lbl">Codes</div></div>
+        <div class="divider"></div>
+        <div class="stat"><div class="stat-val" id="statDates">0</div><div class="stat-lbl">Dates</div></div>
+        <div class="divider"></div>
+        <div class="stat"><div class="stat-val" id="statRegions">0</div><div class="stat-lbl">Regions</div></div>
+      </div>
+
+      <div>
+        <div class="output-header">
+          <div class="output-title">COMBINED OUTPUT</div>
+          <button class="copy-btn" id="copyBtn" onclick="copyOutput()">Copy All</button>
+        </div>
+        <div class="format-note" id="formatNote"></div>
+        <div class="code-output empty" id="codeOutput">Select regions, hero positions &amp; date range — then hit Extract.</div>
+      </div>
+
+      <div id="breakdownSection" style="display:none">
+        <div class="output-title" style="margin-bottom:12px">BREAKDOWN BY DATE</div>
+        <div class="breakdown-grid" id="breakdownGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip">Copied!</div>
+
+<script>
+// ── REGION CONFIG ─────────────────────────────────────────────────────────────
+const REGION_CONFIGS = {
+  AU: {
+    sheet: 'AU Email Schedule',
+    dateCol: 0, subCol: 2,
+    heroCols: [3,5,6,7],
+    dataStart: 2,
+    pickRow: rows => {
+      // Prefer row with sub matching default labels, most codes as tiebreak
+      const prefer = ['default','Default','3 x Weekly','3x Weekly','Weekly'];
+      let best = null, bestScore = -1;
+      rows.forEach(r => {
+        const isDefault = prefer.includes(r.sub);
+        const codeCount = r.heroes.filter(h=>h.code).length;
+        const score = (isDefault ? 100 : 0) + codeCount;
+        if (score > bestScore) { best = r; bestScore = score; }
+      });
+      return best || rows[0];
+    }
+  },
+  NZ: {
+    sheet: 'NZ Email Schedule',
+    dateCol: 0, subCol: null,
+    heroCols: [2,3,4,5],
+    dataStart: 2
+  },
+  US: {
+    sheet: 'US-CA Schedule',
+    dateCol: 0, subCol: null,
+    heroCols: [4,5,6,7],
+    dataStart: 2
+  },
+  Asia: {
+    sheet: 'Asia Email Schedule',
+    dateCol: 0, subCol: null,
+    heroCols: [4,6,8,10],
+    dataStart: 2
+  },
+  India: {
+    sheet: 'India-SAfrica Email Schedule',
+    dateCol: 0, subCol: 2,
+    heroCols: [3,5,7,9],
+    dataStart: 2,
+    filterSub: s => s && s.toLowerCase().includes('india')
+  },
+  SAfrica: {
+    sheet: 'India-SAfrica Email Schedule',
+    dateCol: 0, subCol: 2,
+    heroCols: [3,5,7,9],
+    dataStart: 2,
+    filterSub: s => s && (s.toLowerCase().includes('africa') || s.toLowerCase().includes('sth'))
+  }
+};
+
+const REGION_LABELS = {AU:'AU', NZ:'NZ', US:'US', Asia:'Asia', India:'India', SAfrica:'S.Africa'};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let parsedData = {};
+let activeRegions = new Set(['NZ']);
+let activeHeroes = new Set([0]);
+let outputMode = 'comma';
+let outputOrder = 'chrono';   // 'chrono' | 'random'
+// Per-hero max counts (index 0-3 = Hero 1-4)
+let heroMaxCounts = [20, 20, 20, 20];
+
+// ── FILE DROP ────────────────────────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function reloadFile() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('uploadScreen').style.display = 'flex';
+  parsedData = {};
+  document.getElementById('fileInput').value = '';
+}
+
+function handleFile(file) {
+  if (!file.name.match(/\.xlsx$/i)) return alert('Please upload an .xlsx file.');
+  const overlay = document.getElementById('parsingOverlay');
+  const msg = document.getElementById('parsingMsg');
+  overlay.classList.add('show');
+  msg.textContent = 'Reading spreadsheet...';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      msg.textContent = 'Extracting hyperlinks...';
+      setTimeout(() => {
+        try {
+          parseWorkbook(e.target.result, file.name);
+        } catch(err) {
+          overlay.classList.remove('show');
+          alert('Parse error: ' + err.message);
+          console.error(err);
+        }
+        overlay.classList.remove('show');
+      }, 60);
+    } catch(err) {
+      overlay.classList.remove('show');
+      alert('Read error: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── PARSE ────────────────────────────────────────────────────────────────────
+function extractCode(url) {
+  if (!url) return null;
+  const code = url.split('?')[0].replace(/\/$/, '').split('/').pop();
+  return /^[A-Za-z0-9]{15,18}$/.test(code) ? code : null;
+}
+
+function toDateStr(val) {
+  if (!val && val !== 0) return null;
+  if (typeof val === 'number') {
+    const d = XLSX.SSF.parse_date_code(val);
+    if (!d) return null;
+    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+  if (val instanceof Date) return val.toISOString().slice(0,10);
+  if (typeof val === 'string' && val.trim()) {
+    const m = val.match(/(\d{4}-\d{2}-\d{2})/);
+    if (m) return m[1];
+    const d = new Date(val);
+    if (!isNaN(d)) return d.toISOString().slice(0,10);
+  }
+  return null;
+}
+
+function parseWorkbook(buf, fname) {
+  const wb = XLSX.read(buf, { type: 'array', cellStyles: false, cellHTML: false });
+
+  // Pre-extract all sheet data including hyperlinks
+  const sheetCache = {};
+
+  function getSheet(sheetName) {
+    if (sheetCache[sheetName]) return sheetCache[sheetName];
+    const ws = wb.Sheets[sheetName];
+    if (!ws) return null;
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    const rows = [];
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      const row = [];
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const addr = XLSX.utils.encode_cell({r:R, c:C});
+        const cell = ws[addr];
+        if (!cell) { row.push(null); continue; }
+        row.push(cell.l && cell.l.Target
+          ? { v: cell.v, code: extractCode(cell.l.Target) }
+          : cell.v != null ? cell.v : null);
+      }
+      rows.push(row);
+    }
+    sheetCache[sheetName] = rows;
+    return rows;
+  }
+
+  parsedData = {};
+
+  Object.entries(REGION_CONFIGS).forEach(([regionKey, cfg]) => {
+    const rows = getSheet(cfg.sheet);
+    if (!rows) { parsedData[regionKey] = []; return; }
+
+    // Group rows by date
+    const byDate = {};
+    rows.slice(cfg.dataStart).forEach(row => {
+      const dateStr = toDateStr(row[cfg.dateCol]);
+      if (!dateStr || dateStr < '2020-01-01') return;
+
+      const sub = cfg.subCol != null
+        ? (typeof row[cfg.subCol] === 'object' && row[cfg.subCol] !== null
+            ? String(row[cfg.subCol].v || '').trim()
+            : String(row[cfg.subCol] || '').trim())
+        : '';
+
+      if (cfg.filterSub && !cfg.filterSub(sub)) return;
+
+      const heroes = cfg.heroCols.map(ci => {
+        const cell = row[ci];
+        if (cell === null || cell === undefined) return { name: '', code: null };
+        if (typeof cell === 'object') return { name: String(cell.v || ''), code: cell.code || null };
+        return { name: String(cell), code: null };
+      });
+
+      if (!byDate[dateStr]) byDate[dateStr] = [];
+      byDate[dateStr].push({ date: dateStr, sub, heroes });
+    });
+
+    // Pick one row per date
+    parsedData[regionKey] = Object.keys(byDate).sort().map(dt => {
+      const candidates = byDate[dt];
+      const chosen = cfg.pickRow ? cfg.pickRow(candidates) : candidates[0];
+      return {
+        date: dt,
+        h: chosen.heroes.map(h => h.code || ''),
+        n: chosen.heroes.map(h => h.name || '')
+      };
+    });
+
+    const codes = parsedData[regionKey].reduce((s,r)=>s+r.h.filter(Boolean).length,0);
+    console.log(`${regionKey}: ${parsedData[regionKey].length} dates, ${codes} codes`);
+  });
+
+  launchApp(fname);
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+function launchApp(fname) {
+  document.getElementById('uploadScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.getElementById('fileNameBadge').textContent = fname || 'file.xlsx';
+
+  // Region buttons
+  const rg = document.getElementById('regionGrid');
+  rg.innerHTML = '';
+  Object.keys(REGION_CONFIGS).forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'toggle-btn' + (activeRegions.has(r) ? ' active' : '');
+    btn.textContent = REGION_LABELS[r];
+    btn.onclick = () => { activeRegions.has(r) ? activeRegions.delete(r) : activeRegions.add(r); btn.classList.toggle('active'); };
+    rg.appendChild(btn);
+  });
+
+  // Hero buttons
+  const hg = document.getElementById('heroGrid');
+  hg.innerHTML = '';
+  ['Hero 1','Hero 2','Hero 3','Hero 4'].forEach((lbl,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'toggle-btn hero' + (activeHeroes.has(i) ? ' active' : '');
+    btn.textContent = lbl;
+    btn.onclick = () => {
+      activeHeroes.has(i) ? activeHeroes.delete(i) : activeHeroes.add(i);
+      btn.classList.toggle('active');
+      // Update slider label highlight
+      const sliderLabel = document.querySelector(`.hero-slider-label[data-hero="${i}"]`);
+      if (sliderLabel) sliderLabel.classList.toggle('active-hero', activeHeroes.has(i));
+    };
+    hg.appendChild(btn);
+  });
+
+  // Per-hero sliders
+  const hs = document.getElementById('heroSliders');
+  hs.innerHTML = '';
+  ['Hero 1','Hero 2','Hero 3','Hero 4'].forEach((lbl, i) => {
+    const row = document.createElement('div');
+    row.className = 'hero-slider-row';
+    row.innerHTML = `
+      <span class="hero-slider-label${activeHeroes.has(i) ? ' active-hero' : ''}" data-hero="${i}">${lbl}</span>
+      <input type="range" min="1" max="40" value="${heroMaxCounts[i]}" id="heroSlider${i}" />
+      <div class="hero-slider-val" id="heroSliderVal${i}">${heroMaxCounts[i]}</div>
+    `;
+    row.querySelector(`#heroSlider${i}`).oninput = function() {
+      heroMaxCounts[i] = parseInt(this.value);
+      document.getElementById(`heroSliderVal${i}`).textContent = this.value;
+    };
+    hs.appendChild(row);
+  });
+  const today = new Date();
+  const prior = new Date(today);
+  prior.setDate(prior.getDate() - 30);
+  document.getElementById('dateTo').value = today.toISOString().slice(0,10);
+  document.getElementById('dateFrom').value = prior.toISOString().slice(0,10);
+
+  const out = document.getElementById('codeOutput');
+  out.className = 'code-output empty';
+  out.textContent = 'Select regions, hero positions & date range — then hit Extract.';
+  document.getElementById('breakdownSection').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+}
+
+// ── EXTRACT ───────────────────────────────────────────────────────────────────
+function runExtract() {
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo   = document.getElementById('dateTo').value;
+  if (!dateFrom || !dateTo) return alert('Set both dates.');
+  if (!activeRegions.size) return alert('Select at least one region.');
+  if (!activeHeroes.size) return alert('Select at least one Hero position.');
+
+  // Collect entries: { date, region, heroIdx, code, name }
+  // Per hero, cap at heroMaxCounts[hi] rows (most recent first within each region+hero combo)
+  const entries = []; // ordered collection preserving date desc per region+hero
+
+  Object.keys(REGION_CONFIGS).forEach(region => {
+    if (!activeRegions.has(region)) return;
+    const rows = parsedData[region] || [];
+
+    const filtered = rows
+      .filter(r => r.date >= dateFrom && r.date <= dateTo)
+      .sort((a,b) => b.date.localeCompare(a.date)); // most recent first
+
+    activeHeroes.forEach(hi => {
+      let count = 0;
+      filtered.forEach(row => {
+        if (count >= heroMaxCounts[hi]) return;
+        const code = row.h[hi];
+        if (!code) return;
+        entries.push({ date: row.date, region, heroIdx: hi, code, name: row.n[hi] });
+        count++;
+      });
+    });
+  });
+
+  // Build byDate lookup for breakdown
+  const byDate = {};
+  entries.forEach(e => {
+    if (!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+
+  // For the flat output list: sort by date desc, deduplicate codes
+  // Group all entries by date desc, within each date preserve region/hero order
+  const datesSorted = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+  let orderedCodes = [];
+  datesSorted.forEach(dt => {
+    byDate[dt].forEach(e => {
+      if (!orderedCodes.includes(e.code)) orderedCodes.push(e.code);
+    });
+  });
+
+  // Apply randomise if selected
+  if (outputOrder === 'random') {
+    for (let i = orderedCodes.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [orderedCodes[i], orderedCodes[j]] = [orderedCodes[j], orderedCodes[i]];
+    }
+  }
+
+  render(orderedCodes, byDate);
+}
+
+function render(uniqueCodes, byDate) {
+  const dateKeys = Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+
+  document.getElementById('statsBar').style.display = 'flex';
+  document.getElementById('statCodes').textContent = uniqueCodes.length;
+  document.getElementById('statDates').textContent = dateKeys.length;
+  document.getElementById('statRegions').textContent = activeRegions.size;
+
+  const outEl = document.getElementById('codeOutput');
+  if (!uniqueCodes.length) {
+    outEl.className = 'code-output empty';
+    outEl.textContent = 'No codes found for this selection.';
+    document.getElementById('breakdownSection').style.display = 'none';
+    return;
+  }
+
+  outEl.className = 'code-output';
+  let str;
+  if (outputMode === 'comma') str = uniqueCodes.join(', ');
+  else if (outputMode === 'newline') str = uniqueCodes.join('\n');
+  else str = JSON.stringify(uniqueCodes, null, 2);
+  outEl.textContent = str;
+  document.getElementById('formatNote').textContent = `${uniqueCodes.length} unique codes · ${outputOrder === 'random' ? 'randomised' : 'most recent first'}`;
+
+  // Breakdown
+  document.getElementById('breakdownSection').style.display = 'block';
+  const grid = document.getElementById('breakdownGrid');
+  grid.innerHTML = '';
+
+  // Group by region
+  const byRegion = {};
+  dateKeys.forEach(dt => {
+    byDate[dt].forEach(e => {
+      if (!byRegion[e.region]) byRegion[e.region] = {};
+      if (!byRegion[e.region][dt]) byRegion[e.region][dt] = [];
+      byRegion[e.region][dt].push(e);
+    });
+  });
+
+  Object.entries(byRegion).forEach(([region, dateMap]) => {
+    const sortedDates = Object.keys(dateMap).sort((a,b)=>b.localeCompare(a));
+    const total = sortedDates.reduce((s,d)=>s+dateMap[d].length,0);
+    const card = document.createElement('div');
+    card.className = 'breakdown-card';
+    const hdr = document.createElement('div');
+    hdr.className = 'card-header';
+    hdr.innerHTML = `<div class="card-region">${REGION_LABELS[region]}</div><div class="card-meta">${total} codes · ${sortedDates.length} dates</div>`;
+    card.appendChild(hdr);
+
+    sortedDates.forEach(dt => {
+      const row = document.createElement('div');
+      row.className = 'card-row';
+      row.innerHTML = `<div class="card-date">${dt.slice(5).replace('-','/')}</div><div class="card-codes"></div>`;
+      const codesEl = row.querySelector('.card-codes');
+      dateMap[dt].forEach(e => {
+        const chip = document.createElement('span');
+        chip.className = 'code-chip';
+        chip.title = e.name || e.code;
+        chip.innerHTML = `<span class="hero-tag">H${e.heroIdx+1}</span>${e.code}`;
+        chip.onclick = ev => copyChip(e.code, ev);
+        codesEl.appendChild(chip);
+      });
+      card.appendChild(row);
+    });
+    grid.appendChild(card);
+  });
+}
+
+function setOrder(order, btn) {
+  outputOrder = order;
+  document.querySelectorAll('#orderChron, #orderRand').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function copyOutput() {
+  const text = document.getElementById('codeOutput').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy All'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function copyChip(code, ev) {
+  navigator.clipboard.writeText(code);
+  const tt = document.getElementById('tooltip');
+  tt.style.left = ev.clientX + 'px';
+  tt.style.top = ev.clientY + 'px';
+  tt.classList.add('show');
+  setTimeout(() => tt.classList.remove('show'), 1100);
+}
+
+function setMode(mode, btn) {
+  outputMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
