@@ -222,6 +222,7 @@ input[type="date"]:focus { border-color: var(--accent); }
 input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
 .count-val { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--accent); min-width: 26px; text-align: right; }
 
+.au-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
 .hero-sliders { display: flex; flex-direction: column; gap: 8px; }
 .hero-slider-row { display: flex; align-items: center; gap: 8px; }
 .hero-slider-label {
@@ -422,6 +423,11 @@ input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
         <div class="region-grid" id="regionGrid"></div>
       </div>
 
+      <div id="auSubPanel" style="display:none">
+        <div class="section-label">AU Sub-regions</div>
+        <div class="au-sub-grid" id="auSubGrid"></div>
+      </div>
+
       <div>
         <div class="section-label">Hero Positions</div>
         <div class="hero-grid" id="heroGrid"></div>
@@ -489,6 +495,24 @@ input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
 <div class="tooltip" id="tooltip">Copied!</div>
 
 <script>
+// ── AU SUB-REGION GROUPS ──────────────────────────────────────────────────────
+const AU_SUB_GROUPS = {
+  'Default':       ['default'],
+  '3x Weekly':     ['3 x weekly', '3x weekly'],
+  'Weekly':        ['weekly'],
+  'NSW only':      ['nsw only'],
+  'QLD only':      ['qld only'],
+  'VIC only':      ['vic only'],
+  'AU Tours':      ['au tours'],
+  'AU Cruise':     ['au cruise'],
+  'Maldives Wkly': ['maldives weekly'],
+  '2nd Email':     ['2nd email'],
+  'Monthly':       ['monthly'],
+};
+
+// Which AU sub-regions are active (Set of group labels)
+let activeAuSubs = new Set(['Default', '3x Weekly']);
+
 // ── REGION CONFIG ─────────────────────────────────────────────────────────────
 const REGION_CONFIGS = {
   AU: {
@@ -496,18 +520,7 @@ const REGION_CONFIGS = {
     dateCol: 0, subCol: 2,
     heroCols: [3,5,6,7],
     dataStart: 2,
-    pickRow: rows => {
-      // Prefer row with sub matching default labels, most codes as tiebreak
-      const prefer = ['default','Default','3 x Weekly','3x Weekly','Weekly'];
-      let best = null, bestScore = -1;
-      rows.forEach(r => {
-        const isDefault = prefer.includes(r.sub);
-        const codeCount = r.heroes.filter(h=>h.code).length;
-        const score = (isDefault ? 100 : 0) + codeCount;
-        if (score > bestScore) { best = r; bestScore = score; }
-      });
-      return best || rows[0];
-    }
+    multiSub: true  // keep all sub-rows, filtered at extract time
   },
   NZ: {
     sheet: 'NZ Email Schedule',
@@ -686,10 +699,21 @@ function parseWorkbook(buf, fname) {
       byDate[dateStr].push({ date: dateStr, sub, heroes });
     });
 
-    // Pick one row per date
+    // Pick one row per date (or all sub-rows for AU)
     parsedData[regionKey] = Object.keys(byDate).sort().map(dt => {
       const candidates = byDate[dt];
-      const chosen = cfg.pickRow ? cfg.pickRow(candidates) : candidates[0];
+      if (cfg.multiSub) {
+        // Store all sub-rows for AU
+        return {
+          date: dt,
+          subs: candidates.map(c => ({
+            sub: c.sub,
+            h: c.heroes.map(h => h.code || ''),
+            n: c.heroes.map(h => h.name || '')
+          }))
+        };
+      }
+      const chosen = candidates[0];
       return {
         date: dt,
         h: chosen.heroes.map(h => h.code || ''),
@@ -702,6 +726,41 @@ function parseWorkbook(buf, fname) {
   });
 
   launchApp(fname);
+}
+
+// ── AU SUB-PANEL ─────────────────────────────────────────────────────────────
+function updateAuSubPanel() {
+  const panel = document.getElementById('auSubPanel');
+  const grid = document.getElementById('auSubGrid');
+  if (!panel) return;
+
+  const auActive = activeRegions.has('AU');
+  panel.style.display = auActive ? 'block' : 'none';
+  if (!auActive) return;
+
+  // Build buttons if not already built
+  if (grid.children.length === 0) {
+    Object.keys(AU_SUB_GROUPS).forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'toggle-btn' + (activeAuSubs.has(label) ? ' active' : '');
+      btn.style.fontSize = '11px';
+      btn.textContent = label;
+      btn.onclick = () => {
+        activeAuSubs.has(label) ? activeAuSubs.delete(label) : activeAuSubs.add(label);
+        btn.classList.toggle('active');
+      };
+      grid.appendChild(btn);
+    });
+  }
+}
+
+function auSubMatches(subStr) {
+  const lower = subStr.toLowerCase();
+  for (const [label, patterns] of Object.entries(AU_SUB_GROUPS)) {
+    if (!activeAuSubs.has(label)) continue;
+    if (patterns.some(p => lower === p || lower.startsWith(p))) return true;
+  }
+  return false;
 }
 
 // ── APP ───────────────────────────────────────────────────────────────────────
@@ -717,9 +776,16 @@ function launchApp(fname) {
     const btn = document.createElement('button');
     btn.className = 'toggle-btn' + (activeRegions.has(r) ? ' active' : '');
     btn.textContent = REGION_LABELS[r];
-    btn.onclick = () => { activeRegions.has(r) ? activeRegions.delete(r) : activeRegions.add(r); btn.classList.toggle('active'); };
+    btn.onclick = () => {
+      activeRegions.has(r) ? activeRegions.delete(r) : activeRegions.add(r);
+      btn.classList.toggle('active');
+      updateAuSubPanel();
+    };
     rg.appendChild(btn);
   });
+
+  // AU Sub-region buttons
+  updateAuSubPanel();
 
   // Hero buttons
   const hg = document.getElementById('heroGrid');
@@ -792,6 +858,21 @@ function runExtract() {
       let count = 0;
       filtered.forEach(row => {
         if (count >= heroMaxCounts[hi]) return;
+
+        // AU has multi-sub rows
+        if (row.subs) {
+          const matchingSubs = row.subs.filter(s => auSubMatches(s.sub));
+          // Pick first matching sub that has a code for this hero
+          for (const sub of matchingSubs) {
+            const code = sub.h[hi];
+            if (!code) continue;
+            entries.push({ date: row.date, region, heroIdx: hi, code, name: sub.n[hi], subLabel: sub.sub });
+            count++;
+            break; // one entry per date per hero
+          }
+          return;
+        }
+
         const code = row.h[hi];
         if (!code) return;
         entries.push({ date: row.date, region, heroIdx: hi, code, name: row.n[hi] });
