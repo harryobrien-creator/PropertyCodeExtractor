@@ -44,15 +44,10 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Syne', sans-serif; font-size: 13px; background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
-
 .app { display: flex; flex-direction: column; height: 100vh; }
 
 /* TOPBAR */
-.topbar {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 16px; height: 48px;
-  display: flex; align-items: center; gap: 10px; flex-shrink: 0; z-index: 10;
-}
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: 48px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; z-index: 10; }
 .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); flex-shrink: 0; }
 .logo-mark { width: 26px; height: 26px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #000; }
 .sep { flex: 1; }
@@ -89,7 +84,7 @@ body { font-family: 'Syne', sans-serif; font-size: 13px; background: var(--bg); 
 .o-row { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-bottom: 1px solid var(--border); }
 .o-pos { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); width: 14px; flex-shrink: 0; text-align: center; }
 .o-pos.pinned { color: var(--accent); }
-.o-tag { font-size: 8px; font-weight: 700; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; font-family: 'DM Mono', monospace; letter-spacing: 0.03em; }
+.o-tag { font-size: 8px; font-weight: 700; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; font-family: 'DM Mono', monospace; }
 .o-tag.h1 { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
 .o-tag.h2 { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
 .o-tag.h3 { background: rgba(255,255,255,0.04); color: var(--text3); border: 1px solid var(--border); }
@@ -174,39 +169,76 @@ body { font-family: 'Syne', sans-serif; font-size: 13px; background: var(--bg); 
 .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
 .btn.primary:hover { background: var(--accent2); }
 
-/* H-COUNT CONTROLS */
-.hcount-bar {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 12px;
-}
+/* H-COUNT BAR */
+.hcount-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 12px; }
 .hcount-group { display: flex; align-items: center; gap: 7px; }
 .hcount-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); white-space: nowrap; }
 .hcount-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; font-family: 'DM Mono', monospace; }
 .hcount-badge.h1 { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
 .hcount-badge.h2 { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
 .hcount-badge.h3 { background: rgba(255,255,255,0.04); color: var(--text3); border: 1px solid var(--border); }
-.hcount-spin { display: flex; align-items: center; gap: 0; }
+.hcount-spin { display: flex; align-items: center; }
 .hcount-spin button { width: 22px; height: 22px; border: 1px solid var(--border2); background: var(--surface3); color: var(--text2); cursor: pointer; font-size: 13px; line-height: 1; font-family: monospace; transition: all 0.1s; display: flex; align-items: center; justify-content: center; }
 .hcount-spin button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
 .hcount-spin button:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
 .hcount-spin button:hover { background: var(--surface2); color: var(--text); }
 .hcount-spin input { width: 34px; height: 22px; border: 1px solid var(--border2); border-left: none; border-right: none; background: var(--surface2); color: var(--text); text-align: center; font-family: 'DM Mono', monospace; font-size: 12px; outline: none; }
-.hcount-apply { margin-left: auto; }
+
+/* ── EXPORT BLOCK ── */
+.export-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.export-block-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+}
+.export-block-title {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3);
+}
+.export-copy-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 10px; font-family: 'Syne', sans-serif; font-weight: 700;
+  cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
+  transition: all 0.15s; white-space: nowrap;
+}
+.export-copy-btn:hover { background: var(--accent); color: #000; }
+.export-copy-btn.copied { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
+.export-textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+  transition: border-color 0.15s;
+  word-break: break-all;
+}
+.export-textarea:focus { border-color: var(--border2); }
+
+/* CHIPS */
+.src-chip { font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px; font-family: 'DM Mono', monospace; text-transform: uppercase; }
+.src-chip.url  { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+.src-chip.cell { background: var(--surface3); color: var(--text3); border: 1px solid var(--border); }
+.date-badge { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); background: var(--surface3); padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
 
 /* DRAG */
 .drag-handle { cursor: grab; color: var(--text3); font-size: 12px; padding: 0 4px; user-select: none; }
 .drag-handle:active { cursor: grabbing; }
 .row-dragging { opacity: 0.3; }
 .row-drag-over td { border-top: 2px solid var(--accent) !important; }
-
-/* DATE BADGE */
-.date-badge { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); background: var(--surface3); padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
-
-/* SOURCE CHIP */
-.src-chip { font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.03em; }
-.src-chip.url  { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
-.src-chip.cell { background: var(--surface3); color: var(--text3); border: 1px solid var(--border); }
 
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -263,12 +295,13 @@ body { font-family: 'Syne', sans-serif; font-size: 13px; background: var(--bg); 
 
     <!-- MAIN -->
     <div class="main">
+
       <!-- OVERVIEW -->
       <div id="panel-overview" class="tab-panel active">
         <div id="ov-empty" class="empty">
           <div class="empty-icon">📋</div>
           <div class="empty-title">Nothing loaded yet</div>
-          <div class="empty-sub">Upload the Daily Email Schedule XLSX.<br>Property codes are extracted from cell hyperlinks.<br>Optionally add a Tableau CSV to rank by performance.</div>
+          <div class="empty-sub">Upload the Daily Email Schedule XLSX.<br>Property codes extracted from cell hyperlinks.<br>Optionally add a Tableau CSV to rank by performance.</div>
         </div>
         <div id="ov-content" style="display:none;">
           <div class="sum-grid" id="sum-grid"></div>
@@ -276,12 +309,14 @@ body { font-family: 'Syne', sans-serif; font-size: 13px; background: var(--bg); 
             <div class="card-title">Region breakdown</div>
             <table class="ot" id="ov-table"></table>
           </div>
+          <!-- ALL-REGIONS EXPORT -->
+          <div id="all-exports"></div>
         </div>
         <div class="upload-grid">
           <div class="upload-zone" id="dz-schedule" onclick="document.getElementById('file-schedule').click()">
             <div class="uz-icon">📅</div>
             <div class="uz-title">Daily Email Schedule</div>
-            <div class="uz-sub">XLSX · property codes from hyperlinks</div>
+            <div class="uz-sub">XLSX · codes from hyperlinks</div>
           </div>
           <div class="upload-zone" id="dz-tableau" onclick="document.getElementById('file-tableau').click()">
             <div class="uz-icon">📊</div>
@@ -298,6 +333,7 @@ body { font-family: 'Syne', sans-serif; font-size: 13px; background: var(--bg); 
       <div id="panel-us"       class="tab-panel"></div>
       <div id="panel-asia"     class="tab-panel"></div>
       <div id="panel-za"       class="tab-panel"></div>
+
     </div>
   </div>
 </div>
@@ -348,84 +384,62 @@ const REGIONS = [
 // ═══════════════════════════════════════════════════════
 const S = {
   wb: null,
-  stats: null,       // Map<id_lc, {views,bookings,cvr,score}>
-  // raw extracted entries per region: [{id, tag, date, source}]
+  stats: null,
   raw: {},
-  // final mixed/ordered list per region: [{id,tag,pinned,date,source,score,...}]
   mixed: {},
-  // per-region H counts
   hCounts: {},
   activeRegion: 'au',
   addRegion: null,
 };
 
 REGIONS.forEach(r => {
-  S.raw[r.key]    = [];
-  S.mixed[r.key]  = [];
-  S.hCounts[r.key] = { h1: 1, h2: 3, h3: 6 };
+  S.raw[r.key]     = [];
+  S.mixed[r.key]   = [];
+  // Default: 1 H1, 6 H2, 13 H3 = 20 total
+  S.hCounts[r.key] = { h1: 1, h2: 6, h3: 13 };
 });
 
 // ═══════════════════════════════════════════════════════
-// HYPERLINK EXTRACTOR
-// The XLSX library stores hyperlinks in ws['!links'] (xlsx >=0.18)
-// and also in cell objects as cell.l.Target
-// We build a map: cellAddress -> URL
+// HYPERLINK EXTRACTION
 // ═══════════════════════════════════════════════════════
 function buildLinkMap(ws) {
-  const map = new Map(); // "A1" -> "https://..."
-
-  // Method 1: cell.l.Target (most reliable in xlsx.full.min)
-  if (ws['!ref']) {
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let R = range.s.r; R <= range.e.r; R++) {
-      for (let C = range.s.c; C <= range.e.c; C++) {
-        const addr = XLSX.utils.encode_cell({r:R,c:C});
-        const cell = ws[addr];
-        if (cell && cell.l && cell.l.Target) {
-          map.set(addr, cell.l.Target);
-        }
+  const map = new Map();
+  if (!ws['!ref']) return map;
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = range.s.r; R <= range.e.r; R++) {
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const addr = XLSX.utils.encode_cell({r:R, c:C});
+      const cell = ws[addr];
+      if (cell && cell.l && cell.l.Target) {
+        map.set(addr, cell.l.Target);
       }
     }
   }
-
   return map;
 }
 
-// Extract property code from a URL
-// Handles patterns like:
-//   /offers/hotel-slug--PROPERTYCODE
-//   /offers/OFFERID
-//   ?id=OFFERID
-//   /hotel/PROPERTYCODE
-//   luxuryescapes.com/au/hotels/PROPERTYCODE
 function extractCodeFromUrl(url) {
   if (!url) return null;
   try {
-    // Pattern: --PROPERTYCODE at end or before query
+    // --PROPERTYCODE pattern
     let m = url.match(/--([A-Z0-9]{6,20})(?:[/?#]|$)/i);
     if (m) return m[1].toUpperCase();
-
-    // Pattern: /offers/OFFERID (Salesforce-style 18-char)
+    // tour-uuid
+    m = url.match(/(tour-[a-f0-9-]{8,})(?:[/?#]|$)/i);
+    if (m) return m[1];
+    // /offers/ID (Salesforce 15–18 char)
     m = url.match(/\/offers\/([a-zA-Z0-9]{15,18})(?:[/?#]|$)/);
     if (m) return m[1];
-
-    // Pattern: tour-uuid
-    m = url.match(/\/(tour-[a-f0-9-]{8,})(?:[/?#]|$)/i);
-    if (m) return m[1];
-
-    // Pattern: /hotels/PROPERTYCODE
+    // /hotels/CODE
     m = url.match(/\/hotels?\/([a-zA-Z0-9_-]{4,})(?:[/?#]|$)/);
-    if (m) return m[1];
-
-    // Pattern: id=VALUE or offerId=VALUE
+    if (m && !['au','nz','us','sg','za'].includes(m[1].toLowerCase())) return m[1];
+    // ?id= or ?offerId=
     m = url.match(/[?&](?:id|offerId|offer_id|propertyId)=([^&]+)/i);
     if (m) return decodeURIComponent(m[1]);
-
-    // Last resort: last path segment if looks like an ID
+    // last path segment fallback
     m = url.match(/\/([a-zA-Z0-9_-]{6,})(?:\?|#|$)/);
-    if (m && !['au','nz','us','sg','za','tours','hotels','offers','experiences','cruises'].includes(m[1].toLowerCase())) {
-      return m[1];
-    }
+    const skip = ['au','nz','us','sg','za','tours','hotels','offers','experiences','cruises'];
+    if (m && !skip.includes(m[1].toLowerCase())) return m[1];
   } catch(e) {}
   return null;
 }
@@ -438,7 +452,6 @@ function loadSchedule(e) {
   const r = new FileReader();
   r.onload = ev => {
     try {
-      // cellStyles:true needed to preserve hyperlinks
       S.wb = XLSX.read(ev.target.result, { type:'binary', cellStyles:true });
       extractAll();
       applyMix();
@@ -448,7 +461,7 @@ function loadSchedule(e) {
       toast('Schedule loaded ✓');
     } catch(err) {
       console.error(err);
-      toast('Error reading schedule: ' + err.message);
+      toast('Error: ' + err.message);
     }
   };
   r.readAsBinaryString(file);
@@ -469,193 +482,125 @@ function extractAll() {
   });
 }
 
-// ── STANDARD REGION EXTRACTION ──
-// Finds H1/H2/H3 columns + a date column, extracts codes from cell hyperlinks
 function extractHeroes(region) {
   const ws = findSheet(region.sheetHint);
   if (!ws) return [];
-
   const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
   if (!rows.length) return [];
-
   const linkMap = buildLinkMap(ws);
 
-  // Find header row
-  let hdrIdx = -1;
-  let colH1=-1, colH2=-1, colH3=-1, colDate=-1;
-
+  let hdrIdx=-1, colH1=-1, colH2=-1, colH3=-1, colDate=-1;
   for (let i = 0; i < Math.min(15, rows.length); i++) {
     const cells = rows[i].map(c => String(c).toLowerCase().trim());
     const h1i = cells.findIndex(c => /hero.?1|^h1$/.test(c));
     if (h1i > -1) {
-      hdrIdx = i;
-      colH1 = h1i;
+      hdrIdx = i; colH1 = h1i;
       colH2 = cells.findIndex(c => /hero.?2|^h2$/.test(c));
       colH3 = cells.findIndex(c => /hero.?3|^h3$/.test(c));
-      // Date column: look for 'send date', 'date', 'send', 'scheduled'
       colDate = cells.findIndex(c => /send.?date|^date$|scheduled|send day/.test(c));
       if (colDate === -1) colDate = cells.findIndex(c => /date/.test(c));
       break;
     }
   }
-
-  // Fallback column positions
-  if (hdrIdx === -1) { hdrIdx = 0; colH1 = 1; colH2 = 2; colH3 = 3; colDate = 0; }
-
-  const entries = []; // {id, tag, date, source}
-
-  for (let r = hdrIdx + 1; r < rows.length; r++) {
-    const row = rows[r];
-
-    // Parse send date for this row
-    const rawDate = colDate > -1 ? row[colDate] : '';
-    const sendDate = parseExcelDate(rawDate);
-
-    // Helper: get code from a column
-    const getCode = (colIdx, tag) => {
-      if (colIdx < 0) return;
-      const addr = XLSX.utils.encode_cell({ r, c: colIdx });
-      const cellVal = String(row[colIdx] || '').trim();
-      const link = linkMap.get(addr);
-
-      let code = null;
-      let source = 'cell';
-
-      if (link) {
-        code = extractCodeFromUrl(link);
-        source = 'url';
-      }
-
-      // Fallback: use cell value if it looks like an ID
-      if (!code && isLikelyId(cellVal)) {
-        code = cellVal;
-        source = 'cell';
-      }
-
-      if (code && !entries.find(e => e.id === code && e.tag === tag)) {
-        entries.push({ id: code, tag, date: sendDate, source });
-      }
-    };
-
-    getCode(colH1, 'H1');
-    getCode(colH2, 'H2');
-    getCode(colH3, 'H3');
-  }
-
-  // Sort by date descending (most recent send date first)
-  entries.sort((a, b) => {
-    if (!a.date && !b.date) return 0;
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-    return b.date - a.date;
-  });
-
-  return entries;
-}
-
-// ── AU TOURS EXTRACTION ──
-// Cols D (idx 3) and G (idx 6), tour-uuid format
-function extractTours(region) {
-  const ws = findSheet(region.sheetHint);
-  if (!ws) return [];
-
-  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-  const linkMap = buildLinkMap(ws);
-
-  // Find header row to get date column
-  let hdrIdx = 0, colDate = -1;
-  for (let i = 0; i < Math.min(15, rows.length); i++) {
-    const cells = rows[i].map(c => String(c).toLowerCase().trim());
-    const di = cells.findIndex(c => /send.?date|^date$|scheduled/.test(c));
-    if (di > -1) { hdrIdx = i; colDate = di; break; }
-  }
+  if (hdrIdx === -1) { hdrIdx=0; colH1=1; colH2=2; colH3=3; colDate=0; }
 
   const entries = [];
+  const seen = new Set();
 
-  for (let r = hdrIdx + 1; r < rows.length; r++) {
-    const row = rows[r];
-    const rawDate = colDate > -1 ? row[colDate] : '';
-    const sendDate = parseExcelDate(rawDate);
+  const getCode = (r, colIdx, tag, sendDate) => {
+    if (colIdx < 0) return;
+    const addr = XLSX.utils.encode_cell({r, c:colIdx});
+    const cellVal = String(rows[r][colIdx] || '').trim();
+    const link = linkMap.get(addr);
+    let code = null, source = 'cell';
+    if (link) { code = extractCodeFromUrl(link); source = 'url'; }
+    if (!code && isLikelyId(cellVal)) { code = cellVal; source = 'cell'; }
+    const key = code + '|' + tag;
+    if (code && !seen.has(key)) {
+      seen.add(key);
+      entries.push({ id: code, tag, date: sendDate, source });
+    }
+  };
 
-    [3, 6].forEach((ci, tagIdx) => {
-      const addr = XLSX.utils.encode_cell({ r, c: ci });
-      const cellVal = String(row[ci] || '').trim();
-      const link = linkMap.get(addr);
-
-      let code = null;
-      let source = 'cell';
-
-      if (link) {
-        code = extractCodeFromUrl(link);
-        // also check for tour- prefix directly in URL
-        if (!code) {
-          const m = link.match(/tour-[a-f0-9-]{8,}/i);
-          if (m) code = m[0];
-        }
-        source = 'url';
-      }
-
-      if (!code && isTourId(cellVal)) {
-        code = cellVal; source = 'cell';
-      }
-
-      if (code && !entries.find(e => e.id === code)) {
-        const tag = tagIdx === 0 ? 'H1' : 'H2';
-        entries.push({ id: code, tag, date: sendDate, source });
-      }
-    });
+  for (let r = hdrIdx+1; r < rows.length; r++) {
+    const sendDate = parseExcelDate(colDate > -1 ? rows[r][colDate] : '');
+    getCode(r, colH1, 'H1', sendDate);
+    getCode(r, colH2, 'H2', sendDate);
+    getCode(r, colH3, 'H3', sendDate);
   }
 
-  // Sort by date descending
+  // Sort newest send date first
   entries.sort((a,b) => {
     if (!a.date && !b.date) return 0;
     if (!a.date) return 1;
     if (!b.date) return -1;
     return b.date - a.date;
   });
+  return entries;
+}
 
+function extractTours(region) {
+  const ws = findSheet(region.sheetHint);
+  if (!ws) return [];
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  const linkMap = buildLinkMap(ws);
+
+  let hdrIdx=0, colDate=-1;
+  for (let i = 0; i < Math.min(15, rows.length); i++) {
+    const cells = rows[i].map(c => String(c).toLowerCase().trim());
+    const di = cells.findIndex(c => /send.?date|^date$|scheduled/.test(c));
+    if (di > -1) { hdrIdx=i; colDate=di; break; }
+  }
+
+  const entries = [];
+  const seen = new Set();
+
+  for (let r = hdrIdx+1; r < rows.length; r++) {
+    const sendDate = parseExcelDate(colDate > -1 ? rows[r][colDate] : '');
+    [3, 6].forEach((ci, ti) => {
+      const addr = XLSX.utils.encode_cell({r, c:ci});
+      const cellVal = String(rows[r][ci] || '').trim();
+      const link = linkMap.get(addr);
+      let code=null, source='cell';
+      if (link) {
+        code = extractCodeFromUrl(link);
+        if (!code) { const m=link.match(/tour-[a-f0-9-]{8,}/i); if(m) code=m[0]; }
+        source='url';
+      }
+      if (!code && isTourId(cellVal)) { code=cellVal; source='cell'; }
+      const tag = ti===0 ? 'H1' : 'H2';
+      if (code && !seen.has(code)) {
+        seen.add(code);
+        entries.push({ id:code, tag, date:sendDate, source });
+      }
+    });
+  }
+
+  entries.sort((a,b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return b.date - a.date;
+  });
   return entries;
 }
 
 // ═══════════════════════════════════════════════════════
-// DATE PARSING
+// DATE HELPERS
 // ═══════════════════════════════════════════════════════
 function parseExcelDate(v) {
   if (!v && v !== 0) return null;
-
-  // Excel serial number
   if (typeof v === 'number' && v > 1000) {
-    // xlsx stores dates as JS Date when cellDates:true, or as serial otherwise
-    const d = XLSX.SSF.parse_date_code(v);
-    if (d) return new Date(d.y, d.m - 1, d.d);
+    try { const d = XLSX.SSF.parse_date_code(v); if(d) return new Date(d.y, d.m-1, d.d); } catch(e) {}
   }
-
-  // Already a JS Date
   if (v instanceof Date) return v;
-
-  const s = String(v).trim();
-  if (!s) return null;
-
-  // ISO yyyy-mm-dd
+  const s = String(v).trim(); if (!s) return null;
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-
-  // dd/mm/yyyy or dd-mm-yyyy
+  if (m) return new Date(+m[1],+m[2]-1,+m[3]);
   m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
-
-  // mm/dd/yyyy (US)
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-  if (m) {
-    const y = m[3].length === 2 ? 2000 + +m[3] : +m[3];
-    return new Date(y, +m[1]-1, +m[2]);
-  }
-
-  // Try native parse as last resort
-  const nd = new Date(s);
-  return isNaN(nd) ? null : nd;
+  if (m) return new Date(+m[3],+m[2]-1,+m[1]);
+  const nd = new Date(s); return isNaN(nd) ? null : nd;
 }
-
 function fmtDate(d) {
   if (!d) return '';
   return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric' });
@@ -666,8 +611,8 @@ function fmtDate(d) {
 // ═══════════════════════════════════════════════════════
 function isLikelyId(v) {
   if (!v || v.length < 4) return false;
-  if (/^\d{1,2}[\/\-]\d{1,2}/.test(v)) return false; // date
-  if (/^\d{4}-\d{2}/.test(v)) return false; // date
+  if (/^\d{1,2}[\/\-]\d{1,2}/.test(v)) return false;
+  if (/^\d{4}-\d{2}/.test(v)) return false;
   return /^[a-zA-Z0-9_\-]{4,}$/.test(v);
 }
 function isTourId(v) {
@@ -681,73 +626,51 @@ function loadTableau(e) {
   const file = e.target.files[0]; if (!file) return;
   const r = new FileReader();
   r.onload = ev => parseTableau(ev.target.result, file.name);
-  r.onerror = () => {
-    const r2 = new FileReader();
-    r2.onload = ev => parseTableau(ev.target.result, file.name);
-    r2.readAsText(file, 'UTF-8');
-  };
+  r.onerror = () => { const r2=new FileReader(); r2.onload=ev=>parseTableau(ev.target.result, file.name); r2.readAsText(file,'UTF-8'); };
   r.readAsText(file, 'UTF-16LE');
   e.target.value = '';
 }
 
 function parseTableau(text, fname) {
-  text = text.replace(/^\uFEFF|^\uFFFE/, '');
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  text = text.replace(/^\uFEFF|^\uFFFE/,'');
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
   if (!lines.length) { toast('Tableau file is empty'); return; }
-
   const sep = lines[0].includes('\t') ? '\t' : ',';
-  const headers = splitLine(lines[0], sep).map(h => h.trim().toLowerCase().replace(/"/g,''));
-
-  const colId = fc(headers, ['offer id','offerid','id','offer_id','property id','deal id','propertyid']);
-  const colV  = fc(headers, ['views','page views','pageviews']);
-  const colB  = fc(headers, ['bookings','booking','orders','transactions']);
-  const colC  = fc(headers, ['conversion rate','cvr','conversion','conv rate','conv_rate','cr']);
-
-  if (colId === -1) { toast('Cannot find Offer ID column in Tableau CSV'); return; }
-
+  const headers = splitLine(lines[0],sep).map(h=>h.trim().toLowerCase().replace(/"/g,''));
+  const colId = fc(headers,['offer id','offerid','id','offer_id','property id','deal id','propertyid']);
+  const colV  = fc(headers,['views','page views','pageviews']);
+  const colB  = fc(headers,['bookings','booking','orders','transactions']);
+  const colC  = fc(headers,['conversion rate','cvr','conversion','conv rate','conv_rate','cr']);
+  if (colId===-1) { toast('Cannot find Offer ID column'); return; }
   const agg = new Map();
-  for (let i = 1; i < lines.length; i++) {
-    const cols = splitLine(lines[i], sep);
-    const id = (cols[colId]||'').replace(/"/g,'').trim().toLowerCase();
+  for (let i=1; i<lines.length; i++) {
+    const cols=splitLine(lines[i],sep);
+    const id=(cols[colId]||'').replace(/"/g,'').trim().toLowerCase();
     if (!id) continue;
-    if (!agg.has(id)) agg.set(id, {v:0,b:0,c:0,cn:0});
-    const rec = agg.get(id);
-    rec.v += pn(cols[colV]);
-    rec.b += pn(cols[colB]);
-    const cv = pn(cols[colC]);
-    if (cv > 0) { rec.c += cv; rec.cn++; }
+    if (!agg.has(id)) agg.set(id,{v:0,b:0,c:0,cn:0});
+    const rec=agg.get(id);
+    rec.v+=pn(cols[colV]); rec.b+=pn(cols[colB]);
+    const cv=pn(cols[colC]); if(cv>0){rec.c+=cv;rec.cn++;}
   }
-
-  let maxV=1, maxB=1, maxC=1;
-  agg.forEach(r => { if(r.v>maxV)maxV=r.v; if(r.b>maxB)maxB=r.b; });
-  agg.forEach(r => { const avg=r.cn>0?r.c/r.cn:0; if(avg>maxC)maxC=avg; });
-
-  const stats = new Map();
-  agg.forEach((rec,id) => {
-    const avgCvr = rec.cn>0 ? rec.c/rec.cn : 0;
-    const score = Math.round(((rec.v/maxV)+(rec.b/maxB)+(avgCvr/maxC))/3*100);
-    stats.set(id, { views:rec.v, bookings:rec.b, cvr:avgCvr, score });
+  let maxV=1,maxB=1,maxC=1;
+  agg.forEach(r=>{if(r.v>maxV)maxV=r.v;if(r.b>maxB)maxB=r.b;});
+  agg.forEach(r=>{const avg=r.cn>0?r.c/r.cn:0;if(avg>maxC)maxC=avg;});
+  const stats=new Map();
+  agg.forEach((rec,id)=>{
+    const avgCvr=rec.cn>0?rec.c/rec.cn:0;
+    const score=Math.round(((rec.v/maxV)+(rec.b/maxB)+(avgCvr/maxC))/3*100);
+    stats.set(id,{views:rec.v,bookings:rec.b,cvr:avgCvr,score});
   });
-
-  S.stats = stats;
-  setStatus('tab-status', '✓ ' + fname + ' (' + stats.size + ')', true);
+  S.stats=stats;
+  setStatus('tab-status','✓ '+fname+' ('+stats.size+')',true);
   markDone('dz-tableau');
-  if (S.wb) applyMix();
-  else renderAll();
-  toast('Stats loaded · ' + stats.size + ' offers');
+  if(S.wb) applyMix(); else renderAll();
+  toast('Stats loaded · '+stats.size+' offers');
 }
 
-function fc(headers, candidates) {
-  for (const c of candidates) { const i = headers.findIndex(h=>h.includes(c)); if(i>-1) return i; }
-  return -1;
-}
-function splitLine(line, sep) {
-  if (sep==='\t') return line.split('\t');
-  const res=[]; let cur=''; let q=false;
-  for(const c of line){ if(c==='"')q=!q; else if(c===','&&!q){res.push(cur);cur='';} else cur+=c; }
-  res.push(cur); return res;
-}
-function pn(v) { if(!v)return 0; const n=parseFloat(String(v).replace(/['",%]/g,'')); return isNaN(n)?0:n; }
+function fc(headers,candidates){ for(const c of candidates){const i=headers.findIndex(h=>h.includes(c));if(i>-1)return i;}return -1; }
+function splitLine(line,sep){ if(sep==='\t')return line.split('\t');const res=[];let cur='';let q=false;for(const c of line){if(c==='"')q=!q;else if(c===','&&!q){res.push(cur);cur='';}else cur+=c;}res.push(cur);return res; }
+function pn(v){if(!v)return 0;const n=parseFloat(String(v).replace(/['",%]/g,''));return isNaN(n)?0:n;}
 
 // ═══════════════════════════════════════════════════════
 // MIX ENGINE
@@ -758,42 +681,32 @@ function applyMix() {
 }
 
 function buildMix(key) {
-  const raw = S.raw[key];      // sorted newest → oldest already
-  const { h1: maxH1, h2: maxH2, h3: maxH3 } = S.hCounts[key];
+  const raw = S.raw[key];
+  const {h1:maxH1, h2:maxH2, h3:maxH3} = S.hCounts[key];
 
-  // Separate by type
-  const h1s = raw.filter(e => e.tag === 'H1');
-  const h2s = raw.filter(e => e.tag === 'H2');
-  const h3s = raw.filter(e => e.tag === 'H3');
+  const h1s = raw.filter(e=>e.tag==='H1').slice(0, maxH1);
+  const h2s = raw.filter(e=>e.tag==='H2').slice(0, maxH2);
+  const h3s = raw.filter(e=>e.tag==='H3').slice(0, maxH3);
 
-  // Take the top N of each type (already sorted newest-first)
-  const selectedH1 = h1s.slice(0, maxH1);
-  const selectedH2 = h2s.slice(0, maxH2);
-  const selectedH3 = h3s.slice(0, maxH3);
+  // Pin the first (newest) H1
+  const pinned  = h1s.length ? h1s[0] : null;
+  const otherH1 = h1s.slice(1);
 
-  // Pin the most recent H1 (first after sort = newest)
-  const pinnedEntry = selectedH1.length ? selectedH1[0] : null;
-  const otherH1 = selectedH1.slice(1);
-
-  // Pool H2s + H3s + remaining H1s, shuffle
-  const pool = shuffle([...otherH1, ...selectedH2, ...selectedH3]);
+  // Shuffle remaining H1s + H2s + H3s
+  const pool = shuffle([...otherH1, ...h2s, ...h3s]);
 
   const list = [];
-  if (pinnedEntry) {
-    list.push({ ...pinnedEntry, pinned:true });
-  }
-  pool.forEach(entry => list.push({ ...entry, pinned:false }));
+  if (pinned) list.push({...pinned, pinned:true});
+  pool.forEach(entry => list.push({...entry, pinned:false}));
 
-  // Attach stats
   list.forEach(item => attachStats(item));
 
-  // Re-sort non-pinned by score if stats available
+  // Re-sort non-pinned by score if stats loaded
   if (S.stats && list.length > 1) {
     const pin = list[0].pinned ? list.splice(0,1)[0] : null;
-    list.sort((a,b) => (b.score||0) - (a.score||0));
+    list.sort((a,b)=>(b.score||0)-(a.score||0));
     if (pin) list.unshift(pin);
   }
-
   return list;
 }
 
@@ -807,8 +720,49 @@ function attachStats(item) {
 
 function shuffle(a) {
   const arr=[...a];
-  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
   return arr;
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT HELPERS
+// ═══════════════════════════════════════════════════════
+function buildExportString(key) {
+  return (S.mixed[key] || []).map(item => item.id).join(', ');
+}
+
+function exportBlockHtml(key, inline) {
+  const region = REGIONS.find(r=>r.key===key);
+  const str = buildExportString(key);
+  const count = (S.mixed[key]||[]).length;
+  const elId = 'exp-' + key;
+  // inline = true means just the block, no wrapper card (used inside region panel)
+  return `
+    <div class="export-block" ${inline?'':'style="margin-bottom:8px;"'}>
+      <div class="export-block-header">
+        <span class="export-block-title">${region.label} — ${count} offer${count!==1?'s':''}</span>
+        <button class="export-copy-btn" id="copybtn-${key}" onclick="copyExport('${key}')">Copy</button>
+      </div>
+      <textarea class="export-textarea" id="${elId}" readonly onclick="this.select()">${str || '(no offers selected)'}</textarea>
+    </div>`;
+}
+
+function copyExport(key) {
+  const str = buildExportString(key);
+  if (!str) { toast('Nothing to copy'); return; }
+  navigator.clipboard.writeText(str).then(() => {
+    const btn = document.getElementById('copybtn-' + key);
+    if (btn) {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent='Copy'; btn.classList.remove('copied'); }, 2000);
+    }
+    toast('Copied to clipboard ✓');
+  }).catch(() => {
+    // fallback: select textarea
+    const ta = document.getElementById('exp-' + key);
+    if (ta) { ta.select(); document.execCommand('copy'); toast('Copied ✓'); }
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -822,17 +776,13 @@ function renderAll() {
 }
 
 function renderSidebar() {
-  document.getElementById('sb-region-label').textContent =
-    REGIONS.find(r=>r.key===S.activeRegion)?.label || '';
+  document.getElementById('sb-region-label').textContent = REGIONS.find(r=>r.key===S.activeRegion)?.label||'';
   const el = document.getElementById('sb-offers');
-  const list = S.mixed[S.activeRegion] || [];
-  if (!list.length) {
-    el.innerHTML = '<div style="padding:12px;font-size:10px;color:var(--text3);">No offers loaded</div>';
-    return;
-  }
-  el.innerHTML = list.map((item,i) => {
-    const sc = item.score;
-    const cls = sc==null?'':sc>=70?'high':sc>=40?'mid':'low';
+  const list = S.mixed[S.activeRegion]||[];
+  if (!list.length) { el.innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);">No offers loaded</div>'; return; }
+  el.innerHTML = list.map((item,i)=>{
+    const sc=item.score;
+    const cls=sc==null?'':sc>=70?'high':sc>=40?'mid':'low';
     return `<div class="o-row">
       <span class="o-pos ${item.pinned?'pinned':''}">${i+1}</span>
       <span class="o-tag ${item.tag.toLowerCase()}">${item.tag}</span>
@@ -843,8 +793,8 @@ function renderSidebar() {
 }
 
 function renderRegionNav() {
-  document.getElementById('region-nav').innerHTML = REGIONS.map(r => {
-    const n = (S.mixed[r.key]||[]).length;
+  document.getElementById('region-nav').innerHTML = REGIONS.map(r=>{
+    const n=(S.mixed[r.key]||[]).length;
     return `<div class="rn-item ${S.activeRegion===r.key?'active':''}" onclick="setActive('${r.key}')">
       <span class="rn-item-name">${r.label}</span>
       <span class="rn-item-count">${n}</span>
@@ -854,33 +804,33 @@ function renderRegionNav() {
 
 function renderOverview() {
   const hasData = !!S.wb;
-  document.getElementById('ov-empty').style.display = hasData ? 'none' : 'block';
-  document.getElementById('ov-content').style.display = hasData ? 'block' : 'none';
+  document.getElementById('ov-empty').style.display = hasData?'none':'block';
+  document.getElementById('ov-content').style.display = hasData?'block':'none';
   if (!hasData) return;
 
-  let total = 0;
-  REGIONS.forEach(r => total += (S.mixed[r.key]||[]).length);
+  let total=0;
+  REGIONS.forEach(r=>total+=(S.mixed[r.key]||[]).length);
   const matched = S.stats ? countMatched() : 0;
-  const urlExtracted = countUrlExtracted();
+  const urlEx = countUrlExtracted();
 
   document.getElementById('sum-grid').innerHTML = `
     <div class="sum-card"><div class="sum-val" style="color:var(--accent);">${REGIONS.length}</div><div class="sum-label">Regions</div></div>
     <div class="sum-card"><div class="sum-val">${total}</div><div class="sum-label">Total Offers</div></div>
-    <div class="sum-card"><div class="sum-val" style="color:var(--purple);">${urlExtracted}</div><div class="sum-label">From hyperlinks</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:var(--purple);">${urlEx}</div><div class="sum-label">From hyperlinks</div></div>
     <div class="sum-card"><div class="sum-val" style="color:${S.stats?'var(--green)':'var(--text3)'};">${S.stats?matched:'—'}</div><div class="sum-label">Stats matched</div></div>
   `;
 
-  const rows = REGIONS.map(r => {
-    const raw  = S.raw[r.key]||[];
-    const list = S.mixed[r.key]||[];
-    const pin  = list.find(x=>x.pinned);
-    const urlCount = raw.filter(x=>x.source==='url').length;
-    const m = list.filter(x=>x.score!==null).length;
+  const rows = REGIONS.map(r=>{
+    const raw=S.raw[r.key]||[];
+    const list=S.mixed[r.key]||[];
+    const pin=list.find(x=>x.pinned);
+    const urlCount=raw.filter(x=>x.source==='url').length;
+    const m=list.filter(x=>x.score!==null).length;
     return `<tr>
       <td style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">${r.label}</td>
-      <td><span class="mono">${raw.length} raw → ${list.length} selected</span></td>
-      <td><span class="mono" style="color:var(--purple);">${urlCount} / ${raw.length}</span></td>
-      <td><span class="mono" style="font-size:9px;max-width:140px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pin?pin.id:'—'}</span></td>
+      <td><span class="mono">${raw.length} raw → ${list.length}</span></td>
+      <td><span class="mono" style="color:var(--purple);">${urlCount}/${raw.length}</span></td>
+      <td><span class="mono" style="font-size:9px;max-width:120px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pin?pin.id:'—'}</span></td>
       <td><span class="mono" style="color:${S.stats?'var(--green)':'var(--text3)'};">${m}/${list.length}</span></td>
       <td><button style="font-size:10px;padding:3px 8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);border-radius:var(--radius);cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;" onclick="goRegion('${r.key}')">View →</button></td>
     </tr>`;
@@ -890,28 +840,27 @@ function renderOverview() {
     <thead><tr><th>Region</th><th>Offers</th><th>From links</th><th>Pinned H1</th><th>Stats</th><th></th></tr></thead>
     <tbody>${rows}</tbody>
   `;
+
+  // All-region export blocks
+  document.getElementById('all-exports').innerHTML = `
+    <div class="card">
+      <div class="card-title">Export — all regions</div>
+      ${REGIONS.map(r=>exportBlockHtml(r.key, true)).join('')}
+    </div>
+  `;
 }
 
-function countMatched() {
-  let n=0;
-  REGIONS.forEach(r => n += (S.mixed[r.key]||[]).filter(x=>x.score!==null).length);
-  return n;
-}
-function countUrlExtracted() {
-  let n=0;
-  REGIONS.forEach(r => n += (S.raw[r.key]||[]).filter(x=>x.source==='url').length);
-  return n;
-}
+function countMatched(){ let n=0; REGIONS.forEach(r=>n+=(S.mixed[r.key]||[]).filter(x=>x.score!==null).length); return n; }
+function countUrlExtracted(){ let n=0; REGIONS.forEach(r=>n+=(S.raw[r.key]||[]).filter(x=>x.source==='url').length); return n; }
 
 // ── H-COUNT CONTROLS ──
 function hCountBar(key) {
   const c = S.hCounts[key];
-  const raw = S.raw[key] || [];
-  const avail = {
-    h1: raw.filter(e=>e.tag==='H1').length,
-    h2: raw.filter(e=>e.tag==='H2').length,
-    h3: raw.filter(e=>e.tag==='H3').length,
-  };
+  const raw = S.raw[key]||[];
+  const avH1=raw.filter(e=>e.tag==='H1').length;
+  const avH2=raw.filter(e=>e.tag==='H2').length;
+  const avH3=raw.filter(e=>e.tag==='H3').length;
+  const total = c.h1+c.h2+c.h3;
 
   const spin = (type, val, max) => `
     <div class="hcount-group">
@@ -920,77 +869,65 @@ function hCountBar(key) {
         <button onclick="adjustH('${key}','${type}',-1)">−</button>
         <input type="number" min="0" max="${max}" value="${val}"
           onchange="setH('${key}','${type}',this.value)"
-          style="width:34px;height:22px;border:1px solid var(--border2);border-left:none;border-right:none;background:var(--surface2);color:var(--text);text-align:center;font-family:'DM Mono',monospace;font-size:12px;outline:none;"
-        />
+          style="width:34px;height:22px;border:1px solid var(--border2);border-left:none;border-right:none;background:var(--surface2);color:var(--text);text-align:center;font-family:'DM Mono',monospace;font-size:12px;outline:none;"/>
         <button onclick="adjustH('${key}','${type}',1)">+</button>
       </div>
-      <span style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;">${val}/${max} avail</span>
+      <span style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;">${max} avail</span>
     </div>`;
 
   return `<div class="hcount-bar">
-    <span class="hcount-label">Offers to include:</span>
-    ${spin('h1', c.h1, avail.h1)}
-    ${spin('h2', c.h2, avail.h2)}
-    ${spin('h3', c.h3, avail.h3)}
-    <button class="tbtn hcount-apply" onclick="reshuffleRegion('${key}')">⟳ Apply</button>
+    <span class="hcount-label">Include:</span>
+    ${spin('h1',c.h1,avH1)}
+    ${spin('h2',c.h2,avH2)}
+    ${spin('h3',c.h3,avH3)}
+    <span style="font-size:10px;font-family:'DM Mono',monospace;color:${total===20?'var(--green)':'var(--amber)'};">= ${total} total${total===20?' ✓':' (target: 20)'}</span>
+    <button class="tbtn" style="margin-left:auto;font-size:10px;padding:4px 10px;" onclick="reshuffleRegion('${key}')">⟳ Apply</button>
   </div>`;
 }
 
 function adjustH(key, type, delta) {
-  const raw = S.raw[key] || [];
-  const avail = raw.filter(e=>e.tag===type.toUpperCase()).length;
-  const cur = S.hCounts[key][type];
-  const next = Math.max(0, Math.min(avail, cur + delta));
-  S.hCounts[key][type] = next;
+  const raw=S.raw[key]||[];
+  const avail=raw.filter(e=>e.tag===type.toUpperCase()).length;
+  S.hCounts[key][type]=Math.max(0,Math.min(avail,S.hCounts[key][type]+delta));
   reshuffleRegion(key);
 }
-
 function setH(key, type, val) {
-  const raw = S.raw[key] || [];
-  const avail = raw.filter(e=>e.tag===type.toUpperCase()).length;
-  const n = Math.max(0, Math.min(avail, parseInt(val)||0));
-  S.hCounts[key][type] = n;
+  const raw=S.raw[key]||[];
+  const avail=raw.filter(e=>e.tag===type.toUpperCase()).length;
+  S.hCounts[key][type]=Math.max(0,Math.min(avail,parseInt(val)||0));
   reshuffleRegion(key);
 }
 
 function renderRegion(key) {
-  const panel = document.getElementById('panel-' + key);
+  const panel = document.getElementById('panel-'+key);
   if (!panel) return;
-
-  const list   = S.mixed[key] || [];
-  const raw    = S.raw[key]   || [];
-  const region = REGIONS.find(r=>r.key===key);
+  const list=S.mixed[key]||[];
+  const raw=S.raw[key]||[];
+  const region=REGIONS.find(r=>r.key===key);
 
   if (!S.wb) {
-    panel.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>
-      <div class="empty-title">${region.label} — no data</div>
-      <div class="empty-sub">Upload the Email Schedule to populate this region.</div></div>`;
+    panel.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">${region.label} — no data</div><div class="empty-sub">Upload the Email Schedule to populate this region.</div></div>`;
     return;
   }
 
-  const urlCount = raw.filter(x=>x.source==='url').length;
-  const cellCount = raw.length - urlCount;
+  const urlCount=raw.filter(x=>x.source==='url').length;
+  const cellCount=raw.length-urlCount;
 
-  const extractionNote = urlCount > 0
-    ? `<div class="banner purple">🔗 ${urlCount} property code${urlCount!==1?'s':''} extracted from cell hyperlinks${cellCount>0?` · ${cellCount} from cell values`:''} · sorted newest send date first</div>`
-    : `<div class="banner warn">⚠ No hyperlinks found in ${region.label} sheet — codes read from cell values directly. Check that the XLSX contains embedded hyperlinks.</div>`;
+  const extractNote = urlCount>0
+    ? `<div class="banner purple">🔗 ${urlCount} code${urlCount!==1?'s':''} extracted from hyperlinks${cellCount>0?` · ${cellCount} from cell values`:''} · sorted newest send date first</div>`
+    : `<div class="banner warn">⚠ No hyperlinks found — codes read from cell values. Check XLSX contains embedded links.</div>`;
 
-  const statsBanner = S.stats
+  const statsNote = S.stats
     ? `<div class="banner info">📊 Non-pinned offers ranked by equal-weight score (views + bookings + CVR).</div>`
     : '';
 
-  const fmtN = n => n==null?'—':n>=1000?(n/1000).toFixed(1)+'k':String(Math.round(n));
-  const fmtC = n => {
-    if (n==null) return '—';
-    const pct = n < 1 ? n*100 : n;
-    return pct.toFixed(2) + '%';
-  };
+  const fmtN=n=>n==null?'—':n>=1000?(n/1000).toFixed(1)+'k':String(Math.round(n));
+  const fmtC=n=>{if(n==null)return'—';const p=n<1?n*100:n;return p.toFixed(2)+'%';};
 
-  const bodyRows = list.map((item,i) => {
-    const sc = item.score;
-    const scColor = sc==null?'var(--text3)':sc>=70?'var(--green)':sc>=40?'var(--amber)':'var(--text3)';
-    const barW = sc!=null?sc:0;
-
+  const bodyRows = list.map((item,i)=>{
+    const sc=item.score;
+    const scColor=sc==null?'var(--text3)':sc>=70?'var(--green)':sc>=40?'var(--amber)':'var(--text3)';
+    const barW=sc!=null?sc:0;
     return `<tr draggable="true" data-i="${i}" data-rk="${key}"
         ondragstart="dStart(event)" ondragover="dOver(event)" ondrop="dDrop(event)" ondragleave="dLeave(event)">
       <td style="width:22px;"><span class="drag-handle">⠿</span></td>
@@ -1002,7 +939,7 @@ function renderRegion(key) {
           <span class="src-chip ${item.source==='url'?'url':'cell'}">${item.source==='url'?'link':'cell'}</span>
         </div>
         ${item.pinned?'<div class="pin-badge">📌 Pinned — most recent</div>':''}
-        ${item.date?`<div class="date-badge" style="margin-top:3px;">Send: ${fmtDate(item.date)}</div>`:''}
+        ${item.date?`<span class="date-badge" style="margin-top:3px;display:inline-block;">Send: ${fmtDate(item.date)}</span>`:''}
       </td>
       <td style="width:90px;">
         <div class="sbar-wrap">
@@ -1022,12 +959,13 @@ function renderRegion(key) {
   }).join('');
 
   panel.innerHTML = `
-    ${extractionNote}
-    ${statsBanner}
+    ${extractNote}
+    ${statsNote}
     ${hCountBar(key)}
+    ${exportBlockHtml(key, true)}
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div class="card-title" style="margin-bottom:0;">${region.label} — ${list.length} offers selected · ${raw.length} total available</div>
+        <div class="card-title" style="margin-bottom:0;">${region.label} — ${list.length} offers · ${raw.length} available</div>
         <div style="display:flex;gap:6px;">
           <button class="tbtn" style="font-size:10px;padding:4px 10px;" onclick="openAdd('${key}')">+ Add</button>
           <button class="tbtn" style="font-size:10px;padding:4px 10px;" onclick="reshuffleRegion('${key}')">⟳ Reshuffle</button>
@@ -1049,115 +987,99 @@ function renderRegion(key) {
 // ═══════════════════════════════════════════════════════
 // DRAG & DROP
 // ═══════════════════════════════════════════════════════
-let _di=null, _dk=null;
-function dStart(e){ _di=parseInt(e.currentTarget.dataset.i); _dk=e.currentTarget.dataset.rk; e.currentTarget.classList.add('row-dragging'); e.dataTransfer.effectAllowed='move'; }
-function dOver(e){ e.preventDefault(); document.querySelectorAll('.row-drag-over').forEach(el=>el.classList.remove('row-drag-over')); e.currentTarget.classList.add('row-drag-over'); }
-function dLeave(e){ e.currentTarget.classList.remove('row-drag-over'); }
+let _di=null,_dk=null;
+function dStart(e){_di=parseInt(e.currentTarget.dataset.i);_dk=e.currentTarget.dataset.rk;e.currentTarget.classList.add('row-dragging');e.dataTransfer.effectAllowed='move';}
+function dOver(e){e.preventDefault();document.querySelectorAll('.row-drag-over').forEach(el=>el.classList.remove('row-drag-over'));e.currentTarget.classList.add('row-drag-over');}
+function dLeave(e){e.currentTarget.classList.remove('row-drag-over');}
 function dDrop(e){
   e.preventDefault();
-  document.querySelectorAll('.row-drag-over,.row-dragging').forEach(el=>{ el.classList.remove('row-drag-over'); el.classList.remove('row-dragging'); });
-  const ti=parseInt(e.currentTarget.dataset.i), tk=e.currentTarget.dataset.rk;
-  if(_di===null||_di===ti||_dk!==tk) return;
+  document.querySelectorAll('.row-drag-over,.row-dragging').forEach(el=>{el.classList.remove('row-drag-over');el.classList.remove('row-dragging');});
+  const ti=parseInt(e.currentTarget.dataset.i),tk=e.currentTarget.dataset.rk;
+  if(_di===null||_di===ti||_dk!==tk)return;
   const list=S.mixed[_dk];
   const [moved]=list.splice(_di,1);
   list.splice(ti,0,moved);
-  if(ti!==0) moved.pinned=false;
-  renderRegion(_dk); renderSidebar();
-  _di=null; _dk=null;
+  if(ti!==0)moved.pinned=false;
+  renderRegion(_dk);renderSidebar();
+  _di=null;_dk=null;
 }
 
 // ═══════════════════════════════════════════════════════
 // OFFER ACTIONS
 // ═══════════════════════════════════════════════════════
-function removeOffer(key, idx) {
+function removeOffer(key,idx){
   S.mixed[key].splice(idx,1);
-  renderRegion(key); renderSidebar(); renderRegionNav();
+  renderRegion(key);renderSidebar();renderRegionNav();
 }
-
-function reshuffleRegion(key) {
-  S.mixed[key] = buildMix(key);
-  renderRegion(key); renderSidebar(); renderRegionNav();
+function reshuffleRegion(key){
+  S.mixed[key]=buildMix(key);
+  renderRegion(key);renderSidebar();renderRegionNav();
 }
 
 // ═══════════════════════════════════════════════════════
-// ADD OFFER MODAL
+// ADD MODAL
 // ═══════════════════════════════════════════════════════
-function openAdd(key) {
-  S.addRegion = key;
-  const r = REGIONS.find(x=>x.key===key);
-  document.getElementById('add-sub').textContent = 'Adding to: ' + r.label;
-  document.getElementById('add-id').value = '';
-  document.getElementById('add-type').value = 'H1';
-  document.getElementById('add-date').value = '';
+function openAdd(key){
+  S.addRegion=key;
+  const r=REGIONS.find(x=>x.key===key);
+  document.getElementById('add-sub').textContent='Adding to: '+r.label;
+  document.getElementById('add-id').value='';
+  document.getElementById('add-type').value='H1';
+  document.getElementById('add-date').value='';
   document.getElementById('overlay-add').classList.add('open');
 }
-function closeAdd() { document.getElementById('overlay-add').classList.remove('open'); }
-function confirmAdd() {
-  const id = document.getElementById('add-id').value.trim();
-  if (!id) { alert('Enter an offer ID'); return; }
-  const tag  = document.getElementById('add-type').value;
-  const dateStr = document.getElementById('add-date').value.trim();
-  const date = dateStr ? parseExcelDate(dateStr) : null;
-  const item = { id, tag, date, source:'manual', pinned:false };
+function closeAdd(){document.getElementById('overlay-add').classList.remove('open');}
+function confirmAdd(){
+  const id=document.getElementById('add-id').value.trim();
+  if(!id){alert('Enter an offer ID');return;}
+  const tag=document.getElementById('add-type').value;
+  const dateStr=document.getElementById('add-date').value.trim();
+  const date=dateStr?parseExcelDate(dateStr):null;
+  const item={id,tag,date,source:'manual',pinned:false};
   attachStats(item);
   S.mixed[S.addRegion].push(item);
   closeAdd();
-  renderRegion(S.addRegion); renderSidebar(); renderRegionNav();
+  renderRegion(S.addRegion);renderSidebar();renderRegionNav();
   toast('Offer added ✓');
 }
 
 // ═══════════════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════════════
-function switchTab(name, el) {
+function switchTab(name,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   el.classList.add('active');
   const rMap={au:'au','au-tours':'au-tours',nz:'nz',us:'us',asia:'asia',za:'za'};
-  if(rMap[name]){ S.activeRegion=rMap[name]; renderSidebar(); renderRegionNav(); }
+  if(rMap[name]){S.activeRegion=rMap[name];renderSidebar();renderRegionNav();}
 }
-function goRegion(key) {
-  const labelMap={au:'AU','au-tours':'AU Tours',nz:'NZ',us:'US',asia:'Asia / SG',za:'South Africa'};
-  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.trim()===labelMap[key]) t.click(); });
+function goRegion(key){
+  const lm={au:'AU','au-tours':'AU Tours',nz:'NZ',us:'US',asia:'Asia / SG',za:'South Africa'};
+  document.querySelectorAll('.tab').forEach(t=>{if(t.textContent.trim()===lm[key])t.click();});
 }
-function setActive(key) {
-  S.activeRegion=key; renderSidebar(); renderRegionNav(); goRegion(key);
-}
+function setActive(key){S.activeRegion=key;renderSidebar();renderRegionNav();goRegion(key);}
 
 // ═══════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════
-function setStatus(id, text, ok) {
-  const el=document.getElementById(id); el.textContent=text;
-  el.className='status-pill'+(ok?' ok':'');
-}
-function markDone(id) {
-  const el=document.getElementById(id); if(!el)return;
-  el.classList.add('done');
-  const icon=el.querySelector('.uz-icon'); if(icon) icon.textContent='✓';
-}
-function toast(msg) {
-  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
-  document.body.appendChild(el); setTimeout(()=>el.remove(),2800);
-}
+function setStatus(id,text,ok){const el=document.getElementById(id);el.textContent=text;el.className='status-pill'+(ok?' ok':'');}
+function markDone(id){const el=document.getElementById(id);if(!el)return;el.classList.add('done');const ic=el.querySelector('.uz-icon');if(ic)ic.textContent='✓';}
+function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2800);}
 
-// Upload zone drag & drop
 ['dz-schedule','dz-tableau'].forEach(id=>{
-  const el=document.getElementById(id); if(!el)return;
+  const el=document.getElementById(id);if(!el)return;
   el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
   el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
   el.addEventListener('drop',e=>{
-    e.preventDefault(); el.classList.remove('drag-over');
-    const file=e.dataTransfer.files[0]; if(!file)return;
-    if(id==='dz-schedule') loadSchedule({target:{files:[file]}});
+    e.preventDefault();el.classList.remove('drag-over');
+    const file=e.dataTransfer.files[0];if(!file)return;
+    if(id==='dz-schedule')loadSchedule({target:{files:[file]}});
     else loadTableau({target:{files:[file]}});
   });
 });
 
-// ═══════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════
 renderRegionNav();
 </script>
 </body>
