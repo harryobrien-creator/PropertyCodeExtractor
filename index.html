@@ -1,1012 +1,1032 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LE Code Extractor</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LE Curation Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
-  --bg: #0e0e0e;
-  --surface: #161616;
-  --surface2: #1e1e1e;
-  --border: #2a2a2a;
-  --accent: #e8ff47;
-  --accent2: #ff6b35;
-  --text: #f0f0f0;
-  --muted: #666;
-  --green: #4ade80;
+  --bg: #0e0e0f;
+  --surface: #161618;
+  --surface2: #1e1e21;
+  --surface3: #252529;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0ede8;
+  --text2: #a8a49e;
+  --text3: #5c5955;
+  --accent: #e8b84b;
+  --accent2: #c49a2e;
+  --accent-bg: rgba(232,184,75,0.08);
+  --accent-border: rgba(232,184,75,0.25);
+  --red: #e85b5b;
+  --red-bg: rgba(232,91,91,0.1);
+  --red-border: rgba(232,91,91,0.25);
+  --green: #5bbd8a;
+  --green-bg: rgba(91,189,138,0.1);
+  --green-border: rgba(91,189,138,0.25);
+  --blue: #5b9ee8;
+  --blue-bg: rgba(91,158,232,0.1);
+  --blue-border: rgba(91,158,232,0.25);
+  --amber: #e8a45b;
+  --amber-bg: rgba(232,164,91,0.1);
+  --amber-border: rgba(232,164,91,0.25);
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Syne', sans-serif;
   min-height: 100vh;
-}
-
-#uploadScreen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: 28px;
-  padding: 40px;
-}
-
-#uploadScreen h1 {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: -1px;
-}
-
-#uploadScreen p {
-  color: var(--muted);
-  font-size: 14px;
-  text-align: center;
-  max-width: 380px;
-  line-height: 1.7;
-}
-
-.drop-zone {
-  border: 2px dashed var(--border);
-  border-radius: 16px;
-  padding: 56px 80px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-  max-width: 460px;
-  position: relative;
-}
-
-.drop-zone:hover, .drop-zone.drag-over {
-  border-color: var(--accent);
-  background: rgba(232,255,71,0.04);
-}
-
-.drop-zone input[type="file"] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
-}
-
-.drop-icon { font-size: 38px; margin-bottom: 12px; display: block; }
-.drop-label { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.drop-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
-
-.parsing-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.88);
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  z-index: 200;
-}
-.parsing-overlay.show { display: flex; }
-.spinner {
-  width: 34px; height: 34px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.parsing-msg { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
-
-#appScreen { display: none; }
-
-header {
-  padding: 18px 32px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.header-left { display: flex; align-items: center; gap: 14px; }
-header h1 { font-size: 19px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
-.file-badge {
-  background: rgba(74,222,128,0.1);
-  border: 1px solid rgba(74,222,128,0.25);
-  border-radius: 20px;
-  color: var(--green);
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  padding: 3px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.file-badge .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
-.reload-btn {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
-  color: var(--muted);
-  font-family: 'Syne', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.reload-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-
-.layout {
-  display: grid;
-  grid-template-columns: 295px 1fr;
-  min-height: calc(100vh - 63px);
-}
-
-.sidebar {
-  border-right: 1px solid var(--border);
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  overflow-y: auto;
-  max-height: calc(100vh - 63px);
-  position: sticky;
-  top: 0;
-}
-
-.section-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 7px;
-}
-
-.region-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-
-.toggle-btn {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 8px 4px;
-  cursor: pointer;
-  transition: all 0.14s;
-  text-align: center;
-}
-.toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
-.toggle-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
-.toggle-btn.hero:hover { border-color: var(--accent2); color: var(--accent2); }
-.toggle-btn.hero.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
-
-.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-input[type="date"] {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  padding: 7px 9px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.14s;
-  color-scheme: dark;
-}
-input[type="date"]:focus { border-color: var(--accent); }
-
-.count-row { display: flex; align-items: center; gap: 10px; }
-.count-row label { margin: 0; white-space: nowrap; }
-input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
-.count-val { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--accent); min-width: 26px; text-align: right; }
-
-.au-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-.hero-sliders { display: flex; flex-direction: column; gap: 8px; }
-.hero-slider-row { display: flex; align-items: center; gap: 8px; }
-.hero-slider-label {
-  font-family: 'Syne', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  width: 46px;
-  flex-shrink: 0;
-  color: var(--muted);
-}
-.hero-slider-label.active-hero { color: var(--accent2); }
-.hero-slider-row input[type="range"] { flex: 1; accent-color: var(--accent2); }
-.hero-slider-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); min-width: 22px; text-align: right; }
-
-.mode-toggle {
-  display: flex;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
   overflow: hidden;
 }
-.mode-btn {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-family: 'Syne', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 7px 3px;
-  cursor: pointer;
-  transition: all 0.14s;
-  text-align: center;
-}
-.mode-btn.active { background: var(--surface2); color: var(--text); }
 
-.run-btn {
-  background: var(--accent);
-  border: none;
-  border-radius: 8px;
-  color: #000;
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 13px;
-  cursor: pointer;
-  width: 100%;
-  letter-spacing: 0.5px;
-  transition: all 0.14s;
-}
-.run-btn:hover { background: #d4eb30; transform: translateY(-1px); }
-.run-btn:active { transform: translateY(0); }
+.app { display: flex; flex-direction: column; height: 100vh; }
 
-.main { padding: 22px 30px; display: flex; flex-direction: column; gap: 20px; }
-
-.stats-bar { display: flex; gap: 20px; }
-.stat { display: flex; flex-direction: column; gap: 2px; }
-.stat-val { font-family: 'DM Mono', monospace; font-size: 24px; color: var(--accent); }
-.stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.divider { width: 1px; background: var(--border); }
-
-.output-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.output-title { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
-.format-note { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 8px; }
-
-.copy-btn {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 14px;
-  cursor: pointer;
-  transition: all 0.14s;
-}
-.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
-.copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #000; }
-
-.code-output {
-  background: #111;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 20px;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  line-height: 1.9;
-  color: var(--accent);
-  word-break: break-all;
-  min-height: 80px;
-  white-space: pre-wrap;
-}
-.code-output.empty {
-  color: var(--muted);
-  font-size: 13px;
-  font-family: 'Syne', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-  word-break: normal;
-}
-
-.breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 10px; }
-.breakdown-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.card-header {
-  padding: 9px 14px;
-  background: var(--surface2);
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 48px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 10;
 }
-.card-region { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); }
-.card-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
 
-.card-row {
-  display: grid;
-  grid-template-columns: 78px 1fr;
-  gap: 6px;
-  padding: 5px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  align-items: start;
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--accent);
+  flex-shrink: 0;
 }
-.card-row:last-child { border-bottom: none; }
-.card-date { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; padding-top: 2px; }
-.card-codes { display: flex; flex-wrap: wrap; gap: 4px; }
-
-.code-chip {
-  background: rgba(232,255,71,0.07);
-  border: 1px solid rgba(232,255,71,0.18);
-  border-radius: 4px;
-  color: var(--accent);
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  padding: 2px 6px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.code-chip:hover { background: rgba(232,255,71,0.18); }
-.hero-tag { font-size: 9px; color: var(--accent2); margin-right: 3px; opacity: 0.8; }
-
-.tooltip {
-  position: fixed;
+.logo-mark {
+  width: 26px; height: 26px;
   background: var(--accent);
-  color: #000;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 10px;
   border-radius: 4px;
-  pointer-events: none;
-  z-index: 9999;
-  white-space: nowrap;
-  transform: translate(-50%, -160%);
-  opacity: 0;
-  transition: opacity 0.12s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; color: #000;
 }
-.tooltip.show { opacity: 1; }
+
+.sep { flex: 1; }
+.vsep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.tbtn {
+  padding: 5px 11px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 600;
+  cursor: pointer; background: var(--surface2); color: var(--text2);
+  transition: all 0.15s; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.tbtn:hover { background: var(--surface3); color: var(--text); }
+.tbtn.accent { background: var(--accent); color: #000; border-color: var(--accent); }
+.tbtn.accent:hover { background: var(--accent2); }
+
+.status-pill {
+  font-size: 10px; font-family: 'DM Mono', monospace;
+  color: var(--text3); white-space: nowrap;
+}
+.status-pill.ok { color: var(--green); }
+
+/* ── TABS ── */
+.tab-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  display: flex;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.tab {
+  padding: 9px 14px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  border: none; background: none; cursor: pointer;
+  color: var(--text3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: 'Syne', sans-serif;
+}
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── WORKSPACE ── */
+.workspace { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0; overflow: hidden;
+}
+
+.sb-head {
+  padding: 10px 12px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sb-label {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  display: block; margin-bottom: 6px;
+}
+
+.region-nav { display: flex; flex-direction: column; gap: 2px; }
+
+.rn-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 8px; border-radius: var(--radius);
+  cursor: pointer; transition: background 0.1s;
+  border: 1px solid transparent;
+}
+.rn-item:hover { background: var(--surface2); }
+.rn-item.active { background: var(--accent-bg); border-color: var(--accent-border); }
+.rn-item-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.rn-item.active .rn-item-name { color: var(--accent); }
+.rn-item-count {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3);
+  background: var(--surface3); padding: 1px 5px; border-radius: 3px;
+}
+
+.sb-offers-head {
+  padding: 8px 12px 4px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.offer-scroll { flex: 1; overflow-y: auto; }
+
+.o-row {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.o-pos {
+  font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3);
+  width: 14px; flex-shrink: 0; text-align: center;
+}
+.o-pos.pinned { color: var(--accent); }
+
+.o-tag {
+  font-size: 8px; font-weight: 700; text-transform: uppercase;
+  padding: 1px 4px; border-radius: 3px; flex-shrink: 0;
+  font-family: 'DM Mono', monospace; letter-spacing: 0.03em;
+}
+.o-tag.h1 { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+.o-tag.h2 { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.o-tag.h3 { background: rgba(255,255,255,0.04); color: var(--text3); border: 1px solid var(--border); }
+
+.o-id {
+  font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; min-width: 0;
+}
+
+.o-score {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  padding: 1px 4px; border-radius: 3px; flex-shrink: 0;
+}
+.o-score.high { background: var(--green-bg); color: var(--green); }
+.o-score.mid  { background: var(--amber-bg); color: var(--amber); }
+.o-score.low  { background: var(--surface3); color: var(--text3); }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.card-title {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px;
+}
+
+/* ── UPLOAD ── */
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.upload-zone {
+  border: 1px dashed var(--border2); border-radius: var(--radius-lg);
+  padding: 22px 16px; text-align: center; cursor: pointer;
+  transition: all 0.2s;
+}
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-bg); }
+.upload-zone.done { border-color: var(--green); border-style: solid; background: var(--green-bg); }
+.uz-icon { font-size: 22px; margin-bottom: 6px; }
+.uz-title { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+.uz-sub { font-size: 10px; color: var(--text3); }
+
+/* ── SUMMARY NUMS ── */
+.sum-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.sum-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 10px 12px;
+}
+.sum-val { font-size: 24px; font-weight: 800; line-height: 1; margin-bottom: 2px; }
+.sum-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+
+/* ── TABLE ── */
+.ot { width: 100%; border-collapse: collapse; }
+.ot th {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text3); padding: 6px 8px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.ot td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.ot tr:last-child td { border-bottom: none; }
+.ot tbody tr:hover td { background: var(--surface2); }
+
+.mono { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); }
+.pin-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9px; color: var(--accent);
+  background: var(--accent-bg); border: 1px solid var(--accent-border);
+  padding: 1px 5px; border-radius: 3px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  margin-top: 3px;
+}
+
+/* ── SCORE BAR ── */
+.sbar-wrap { display: flex; align-items: center; gap: 6px; }
+.sbar { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; max-width: 70px; }
+.sbar-fill { height: 100%; border-radius: 2px; }
+.sval { font-family: 'DM Mono', monospace; font-size: 10px; white-space: nowrap; }
+
+/* ── RANK DOT ── */
+.rank-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface3);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3);
+  flex-shrink: 0;
+}
+.rank-dot.top { background: var(--accent-bg); color: var(--accent); }
+
+/* ── BANNERS ── */
+.banner {
+  padding: 8px 12px; border-radius: var(--radius);
+  font-size: 11px; line-height: 1.5; margin-bottom: 10px;
+}
+.banner.info   { background: var(--blue-bg);  color: var(--blue);  border: 1px solid var(--blue-border); }
+.banner.warn   { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+.banner.success{ background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 48px 20px; color: var(--text3); }
+.empty-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.4; }
+.empty-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 4px; }
+.empty-sub { font-size: 11px; line-height: 1.6; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+  background: var(--surface3); color: var(--text);
+  border: 1px solid var(--border2);
+  padding: 9px 14px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.2s ease;
+}
+@keyframes toastIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); z-index: 500;
+  align-items: flex-start; justify-content: center;
+  padding-top: 60px; backdrop-filter: blur(3px);
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 20px;
+  width: 92%; max-width: 480px;
+  box-shadow: var(--shadow-lg);
+}
+.modal-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.modal-sub { font-size: 11px; color: var(--text3); margin-bottom: 14px; }
+.form-row { margin-bottom: 10px; }
+.form-label { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+.form-input {
+  width: 100%; padding: 7px 9px;
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  font-size: 12px; font-family: 'Syne', sans-serif;
+  background: var(--surface2); color: var(--text);
+  outline: none; transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.btn {
+  padding: 7px 14px; border: 1px solid var(--border2); border-radius: var(--radius);
+  font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 700;
+  cursor: pointer; background: var(--surface2); color: var(--text2);
+  transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.btn:hover { background: var(--surface3); color: var(--text); }
+.btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.btn.primary:hover { background: var(--accent2); }
+
+/* ── DRAG ── */
+.drag-handle { cursor: grab; color: var(--text3); font-size: 12px; padding: 0 4px; user-select: none; }
+.drag-handle:active { cursor: grabbing; }
+.row-dragging { opacity: 0.35; }
+.row-drag-over td { border-top: 2px solid var(--accent) !important; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── TAB PANELS ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 </style>
 </head>
 <body>
+<div class="app">
 
-<!-- UPLOAD SCREEN -->
-<div id="uploadScreen">
-  <h1>LE CODE EXTRACTOR</h1>
-  <p>Upload your Daily Email Schedule .xlsx — it'll extract property codes from Hero 1–4 across all regions.</p>
-  <div class="drop-zone" id="dropZone">
-    <input type="file" accept=".xlsx" id="fileInput" />
-    <span class="drop-icon">📂</span>
-    <div class="drop-label">Drop your .xlsx here</div>
-    <div class="drop-sub">or click to browse · works offline</div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">LE</div>Curation Tool</div>
+    <div class="vsep"></div>
+    <button class="tbtn" onclick="document.getElementById('file-schedule').click()">↑ Email Schedule</button>
+    <input type="file" id="file-schedule" accept=".xlsx,.xls" style="display:none" onchange="loadSchedule(event)">
+    <button class="tbtn" onclick="document.getElementById('file-tableau').click()">↑ Tableau CSV</button>
+    <input type="file" id="file-tableau" accept=".csv,.tsv,.txt" style="display:none" onchange="loadTableau(event)">
+    <button class="tbtn accent" id="remix-btn" style="display:none;" onclick="applyMix()">⟳ Remix</button>
+    <div class="sep"></div>
+    <span class="status-pill" id="sched-status">No schedule loaded</span>
+    <div class="vsep"></div>
+    <span class="status-pill" id="tab-status">No stats loaded</span>
   </div>
-</div>
 
-<!-- PARSING OVERLAY -->
-<div class="parsing-overlay" id="parsingOverlay">
-  <div class="spinner"></div>
-  <div class="parsing-msg" id="parsingMsg">Reading spreadsheet...</div>
-</div>
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active"  onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab"         onclick="switchTab('au',this)">AU</button>
+    <button class="tab"         onclick="switchTab('au-tours',this)">AU Tours</button>
+    <button class="tab"         onclick="switchTab('nz',this)">NZ</button>
+    <button class="tab"         onclick="switchTab('us',this)">US</button>
+    <button class="tab"         onclick="switchTab('asia',this)">Asia / SG</button>
+    <button class="tab"         onclick="switchTab('za',this)">South Africa</button>
+  </div>
 
-<!-- MAIN APP -->
-<div id="appScreen">
-  <header>
-    <div class="header-left">
-      <h1>LE CODE EXTRACTOR</h1>
-      <div class="file-badge"><div class="dot"></div><span id="fileNameBadge">file.xlsx</span></div>
-    </div>
-    <button class="reload-btn" onclick="reloadFile()">&#8593; Upload New File</button>
-  </header>
-
-  <div class="layout">
+  <div class="workspace">
+    <!-- SIDEBAR -->
     <div class="sidebar">
-
-      <div>
-        <div class="section-label">Region</div>
-        <div class="region-grid" id="regionGrid"></div>
+      <div class="sb-head">
+        <span class="sb-label">Regions</span>
+        <div class="region-nav" id="region-nav"></div>
       </div>
-
-      <div id="auSubPanel" style="display:none">
-        <div class="section-label">AU Sub-regions</div>
-        <div class="au-sub-grid" id="auSubGrid"></div>
+      <div class="sb-offers-head">
+        <span class="sb-label" style="margin-bottom:0;" id="sb-region-label">AU</span>
       </div>
-
-      <div>
-        <div class="section-label">Hero Positions</div>
-        <div class="hero-grid" id="heroGrid"></div>
+      <div class="offer-scroll" id="sb-offers">
+        <div style="padding:12px;font-size:10px;color:var(--text3);">Load a schedule to begin</div>
       </div>
-
-      <div>
-        <div class="section-label">Date Range</div>
-        <div class="date-row">
-          <div><label>From</label><input type="date" id="dateFrom" /></div>
-          <div><label>To</label><input type="date" id="dateTo" /></div>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-label">Max Results per Hero</div>
-        <div class="hero-sliders" id="heroSliders"></div>
-      </div>
-
-      <div>
-        <div class="section-label">Order</div>
-        <div class="mode-toggle">
-          <button class="mode-btn active" id="orderChron" onclick="setOrder('chrono',this)">Most Recent First</button>
-          <button class="mode-btn" id="orderRand" onclick="setOrder('random',this)">Randomised</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-label">Output Format</div>
-        <div class="mode-toggle">
-          <button class="mode-btn active" onclick="setMode('comma',this)">code, code</button>
-          <button class="mode-btn" onclick="setMode('newline',this)">per line</button>
-          <button class="mode-btn" onclick="setMode('json',this)">JSON</button>
-        </div>
-      </div>
-
-      <button class="run-btn" onclick="runExtract()">EXTRACT CODES</button>
     </div>
 
+    <!-- MAIN -->
     <div class="main">
-      <div class="stats-bar" id="statsBar" style="display:none">
-        <div class="stat"><div class="stat-val" id="statCodes">0</div><div class="stat-lbl">Codes</div></div>
-        <div class="divider"></div>
-        <div class="stat"><div class="stat-val" id="statDates">0</div><div class="stat-lbl">Dates</div></div>
-        <div class="divider"></div>
-        <div class="stat"><div class="stat-val" id="statRegions">0</div><div class="stat-lbl">Regions</div></div>
-      </div>
 
-      <div>
-        <div class="output-header">
-          <div class="output-title">COMBINED OUTPUT</div>
-          <button class="copy-btn" id="copyBtn" onclick="copyOutput()">Copy All</button>
+      <!-- OVERVIEW -->
+      <div id="panel-overview" class="tab-panel active">
+        <div id="ov-empty" class="empty">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">Nothing loaded yet</div>
+          <div class="empty-sub">Upload the Daily Email Schedule XLSX to extract offer IDs.<br>Optionally add a Tableau CSV to rank by performance.</div>
         </div>
-        <div class="format-note" id="formatNote"></div>
-        <div class="code-output empty" id="codeOutput">Select regions, hero positions &amp; date range — then hit Extract.</div>
+        <div id="ov-content" style="display:none;">
+          <div class="sum-grid" id="sum-grid"></div>
+          <div class="card">
+            <div class="card-title">Region breakdown</div>
+            <table class="ot" id="ov-table"></table>
+          </div>
+        </div>
+        <div class="upload-grid" id="upload-area">
+          <div class="upload-zone" id="dz-schedule" onclick="document.getElementById('file-schedule').click()">
+            <div class="uz-icon">📅</div>
+            <div class="uz-title">Daily Email Schedule</div>
+            <div class="uz-sub">Daily_Email_Schedule_2026.xlsx</div>
+          </div>
+          <div class="upload-zone" id="dz-tableau" onclick="document.getElementById('file-tableau').click()">
+            <div class="uz-icon">📊</div>
+            <div class="uz-title">Tableau Performance CSV</div>
+            <div class="uz-sub">UTF-16 TSV · views, bookings, CVR</div>
+          </div>
+        </div>
       </div>
 
-      <div id="breakdownSection" style="display:none">
-        <div class="output-title" style="margin-bottom:12px">BREAKDOWN BY DATE</div>
-        <div class="breakdown-grid" id="breakdownGrid"></div>
-      </div>
+      <!-- REGION PANELS -->
+      <div id="panel-au"       class="tab-panel"></div>
+      <div id="panel-au-tours" class="tab-panel"></div>
+      <div id="panel-nz"       class="tab-panel"></div>
+      <div id="panel-us"       class="tab-panel"></div>
+      <div id="panel-asia"     class="tab-panel"></div>
+      <div id="panel-za"       class="tab-panel"></div>
+
     </div>
   </div>
 </div>
 
-<div class="tooltip" id="tooltip">Copied!</div>
+<!-- ADD OFFER MODAL -->
+<div class="overlay" id="overlay-add">
+  <div class="modal">
+    <div class="modal-title">Add offer</div>
+    <div class="modal-sub" id="add-sub">Manually add an offer ID to this region</div>
+    <div class="form-row">
+      <label class="form-label">Offer ID</label>
+      <input class="form-input" id="add-id" placeholder="e.g. 006RF00000xyz or tour-uuid"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Hero type</label>
+      <select class="form-input" id="add-type">
+        <option value="H1">H1 — Hero</option>
+        <option value="H2">H2 — Secondary</option>
+        <option value="H3">H3 — Tertiary</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="closeAdd()">Cancel</button>
+      <button class="btn primary" onclick="confirmAdd()">Add offer</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ── AU SUB-REGION GROUPS ──────────────────────────────────────────────────────
-const AU_SUB_GROUPS = {
-  'Default':       ['default'],
-  '3x Weekly':     ['3 x weekly', '3x weekly'],
-  'Weekly':        ['weekly'],
-  'NSW only':      ['nsw only'],
-  'QLD only':      ['qld only'],
-  'VIC only':      ['vic only'],
-  'AU Tours':      ['au tours'],
-  'AU Cruise':     ['au cruise'],
-  'Maldives Wkly': ['maldives weekly'],
-  '2nd Email':     ['2nd email'],
-  'Monthly':       ['monthly'],
+// ═══════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════
+const REGIONS = [
+  { key:'au',       label:'AU',           sheetHint:'AU Email',    code:'AU',  tours:false },
+  { key:'au-tours', label:'AU Tours',     sheetHint:'AU Email',    code:'AU',  tours:true  },
+  { key:'nz',       label:'NZ',           sheetHint:'NZ Email',    code:'NZ',  tours:false },
+  { key:'us',       label:'US',           sheetHint:'US Email',    code:'US',  tours:false },
+  { key:'asia',     label:'Asia / SG',    sheetHint:'Asia Email',  code:'SG',  tours:false },
+  { key:'za',       label:'South Africa', sheetHint:'ZA Email',    code:'ZA',  tours:false },
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const S = {
+  wb: null,
+  stats: null,       // Map<id_lc, {views,bookings,cvr,score}>
+  raw: {},           // {key: {h1:[],h2:[],h3:[]}}
+  mixed: {},         // {key: [{id,tag,pinned,score,...}]}
+  activeRegion: 'au',
+  addRegion: null,
 };
 
-// Which AU sub-regions are active (Set of group labels)
-let activeAuSubs = new Set(['Default', '3x Weekly']);
-
-// ── REGION CONFIG ─────────────────────────────────────────────────────────────
-const REGION_CONFIGS = {
-  AU: {
-    sheet: 'AU Email Schedule',
-    dateCol: 0, subCol: 2,
-    heroCols: [3,5,6,7],
-    dataStart: 2,
-    multiSub: true  // keep all sub-rows, filtered at extract time
-  },
-  NZ: {
-    sheet: 'NZ Email Schedule',
-    dateCol: 0, subCol: null,
-    heroCols: [2,3,4,5],
-    dataStart: 2
-  },
-  US: {
-    sheet: 'US-CA Schedule',
-    dateCol: 0, subCol: null,
-    heroCols: [4,5,6,7],
-    dataStart: 2
-  },
-  Asia: {
-    sheet: 'Asia Email Schedule',
-    dateCol: 0, subCol: null,
-    heroCols: [4,6,8,10],
-    dataStart: 2
-  },
-  India: {
-    sheet: 'India-SAfrica Email Schedule',
-    dateCol: 0, subCol: 2,
-    heroCols: [3,5,7,9],
-    dataStart: 2,
-    filterSub: s => s && s.toLowerCase().includes('india')
-  },
-  SAfrica: {
-    sheet: 'India-SAfrica Email Schedule',
-    dateCol: 0, subCol: 2,
-    heroCols: [3,5,7,9],
-    dataStart: 2,
-    filterSub: s => s && (s.toLowerCase().includes('africa') || s.toLowerCase().includes('sth'))
-  }
-};
-
-const REGION_LABELS = {AU:'AU', NZ:'NZ', US:'US', Asia:'Asia', India:'India', SAfrica:'S.Africa'};
-
-// ── STATE ────────────────────────────────────────────────────────────────────
-let parsedData = {};
-let activeRegions = new Set(['NZ']);
-let activeHeroes = new Set([0]);
-let outputMode = 'comma';
-let outputOrder = 'chrono';   // 'chrono' | 'random'
-// Per-hero max counts (index 0-3 = Hero 1-4)
-let heroMaxCounts = [20, 20, 20, 20];
-
-// ── FILE DROP ────────────────────────────────────────────────────────────────
-const dropZone = document.getElementById('dropZone');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0];
-  if (f) handleFile(f);
-});
-document.getElementById('fileInput').addEventListener('change', e => {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
+REGIONS.forEach(r => {
+  S.raw[r.key]   = { h1:[], h2:[], h3:[] };
+  S.mixed[r.key] = [];
 });
 
-function reloadFile() {
-  document.getElementById('appScreen').style.display = 'none';
-  document.getElementById('uploadScreen').style.display = 'flex';
-  parsedData = {};
-  document.getElementById('fileInput').value = '';
-}
-
-function handleFile(file) {
-  if (!file.name.match(/\.xlsx$/i)) return alert('Please upload an .xlsx file.');
-  const overlay = document.getElementById('parsingOverlay');
-  const msg = document.getElementById('parsingMsg');
-  overlay.classList.add('show');
-  msg.textContent = 'Reading spreadsheet...';
-  const reader = new FileReader();
-  reader.onload = e => {
+// ═══════════════════════════════════════
+// SCHEDULE LOADER
+// ═══════════════════════════════════════
+function loadSchedule(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
     try {
-      msg.textContent = 'Extracting hyperlinks...';
-      setTimeout(() => {
-        try {
-          parseWorkbook(e.target.result, file.name);
-        } catch(err) {
-          overlay.classList.remove('show');
-          alert('Parse error: ' + err.message);
-          console.error(err);
-        }
-        overlay.classList.remove('show');
-      }, 60);
-    } catch(err) {
-      overlay.classList.remove('show');
-      alert('Read error: ' + err.message);
-    }
+      S.wb = XLSX.read(ev.target.result, { type:'binary' });
+      extractAll();
+      applyMix();
+      setStatus('sched-status', '✓ ' + file.name, true);
+      document.getElementById('remix-btn').style.display = '';
+      markDone('dz-schedule');
+      toast('Schedule loaded ✓');
+    } catch(err) { toast('Error: ' + err.message); }
   };
-  reader.readAsArrayBuffer(file);
+  r.readAsBinaryString(file);
+  e.target.value = '';
 }
 
-// ── PARSE ────────────────────────────────────────────────────────────────────
-function extractCode(url) {
-  if (!url) return null;
-  const code = url.split('?')[0].replace(/\/$/, '').split('/').pop();
-  return /^[A-Za-z0-9]{15,18}$/.test(code) ? code : null;
+function findSheet(hint) {
+  if (!S.wb) return null;
+  // exact
+  if (S.wb.Sheets[hint]) return S.wb.Sheets[hint];
+  // case-insensitive partial
+  const lc = hint.toLowerCase();
+  const name = S.wb.SheetNames.find(n => n.toLowerCase().includes(lc.replace(' email','').trim()));
+  return name ? S.wb.Sheets[name] : null;
 }
 
-function toDateStr(val) {
-  if (!val && val !== 0) return null;
-  if (typeof val === 'number') {
-    const d = XLSX.SSF.parse_date_code(val);
-    if (!d) return null;
-    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
-  }
-  if (val instanceof Date) return val.toISOString().slice(0,10);
-  if (typeof val === 'string' && val.trim()) {
-    const m = val.match(/(\d{4}-\d{2}-\d{2})/);
-    if (m) return m[1];
-    const d = new Date(val);
-    if (!isNaN(d)) return d.toISOString().slice(0,10);
-  }
-  return null;
+function extractAll() {
+  REGIONS.forEach(r => {
+    S.raw[r.key] = r.tours ? extractTours(r) : extractHeroes(r);
+  });
 }
 
-function parseWorkbook(buf, fname) {
-  const wb = XLSX.read(buf, { type: 'array', cellStyles: false, cellHTML: false });
+function extractHeroes(region) {
+  const ws = findSheet(region.sheetHint);
+  if (!ws) return { h1:[], h2:[], h3:[] };
 
-  // Pre-extract all sheet data including hyperlinks
-  const sheetCache = {};
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  if (!rows.length) return { h1:[], h2:[], h3:[] };
 
-  function getSheet(sheetName) {
-    if (sheetCache[sheetName]) return sheetCache[sheetName];
-    const ws = wb.Sheets[sheetName];
-    if (!ws) return null;
-    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-    const rows = [];
-    for (let R = range.s.r; R <= range.e.r; R++) {
-      const row = [];
-      for (let C = range.s.c; C <= range.e.c; C++) {
-        const addr = XLSX.utils.encode_cell({r:R, c:C});
-        const cell = ws[addr];
-        if (!cell) { row.push(null); continue; }
-        row.push(cell.l && cell.l.Target
-          ? { v: cell.v, code: extractCode(cell.l.Target) }
-          : cell.v != null ? cell.v : null);
-      }
-      rows.push(row);
+  // Locate header row by looking for "hero" keyword
+  let hdrRow = -1, c1 = -1, c2 = -1, c3 = -1;
+  for (let i = 0; i < Math.min(12, rows.length); i++) {
+    const cells = rows[i].map(c => String(c).toLowerCase().trim());
+    const idx = cells.findIndex(c => /hero.?1|^h1$/.test(c));
+    if (idx > -1) {
+      hdrRow = i; c1 = idx;
+      c2 = cells.findIndex(c => /hero.?2|^h2$/.test(c));
+      c3 = cells.findIndex(c => /hero.?3|^h3$/.test(c));
+      break;
     }
-    sheetCache[sheetName] = rows;
-    return rows;
   }
 
-  parsedData = {};
+  // Fallback: assume cols B/C/D (1/2/3)
+  if (hdrRow === -1) { hdrRow = 0; c1 = 1; c2 = 2; c3 = 3; }
 
-  Object.entries(REGION_CONFIGS).forEach(([regionKey, cfg]) => {
-    const rows = getSheet(cfg.sheet);
-    if (!rows) { parsedData[regionKey] = []; return; }
+  const h1=[], h2=[], h3=[];
+  for (let i = hdrRow+1; i < rows.length; i++) {
+    const row = rows[i];
+    const get = ci => String(row[ci] || '').trim();
+    const v1=get(c1), v2=get(c2), v3=get(c3);
+    if (isId(v1)) h1.push(v1);
+    if (isId(v2) && !h2.includes(v2)) h2.push(v2);
+    if (isId(v3) && !h3.includes(v3)) h3.push(v3);
+  }
+  return { h1: dedup(h1), h2: dedup(h2), h3: dedup(h3) };
+}
 
-    // Group rows by date
-    const byDate = {};
-    rows.slice(cfg.dataStart).forEach(row => {
-      const dateStr = toDateStr(row[cfg.dateCol]);
-      if (!dateStr || dateStr < '2020-01-01') return;
-
-      const sub = cfg.subCol != null
-        ? (typeof row[cfg.subCol] === 'object' && row[cfg.subCol] !== null
-            ? String(row[cfg.subCol].v || '').trim()
-            : String(row[cfg.subCol] || '').trim())
-        : '';
-
-      if (cfg.filterSub && !cfg.filterSub(sub)) return;
-
-      const heroes = cfg.heroCols.map(ci => {
-        const cell = row[ci];
-        if (cell === null || cell === undefined) return { name: '', code: null };
-        if (typeof cell === 'object') return { name: String(cell.v || ''), code: cell.code || null };
-        return { name: String(cell), code: null };
-      });
-
-      if (!byDate[dateStr]) byDate[dateStr] = [];
-      byDate[dateStr].push({ date: dateStr, sub, heroes });
+// AU Tours: extract tour-uuid IDs from columns D (idx 3) and G (idx 6)
+function extractTours(region) {
+  const ws = findSheet(region.sheetHint);
+  if (!ws) return { h1:[], h2:[], h3:[] };
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  const ids = [];
+  for (let i = 1; i < rows.length; i++) {
+    [3, 6].forEach(ci => {
+      const v = String(rows[i][ci] || '').trim();
+      if (isTourId(v) && !ids.includes(v)) ids.push(v);
     });
+  }
+  // First entry pinned as H1, rest split H2/H3
+  return {
+    h1: ids.slice(0, 1),
+    h2: ids.slice(1).filter((_,i) => i%2===0),
+    h3: ids.slice(1).filter((_,i) => i%2!==0),
+  };
+}
 
-    // Pick one row per date (or all sub-rows for AU)
-    parsedData[regionKey] = Object.keys(byDate).sort().map(dt => {
-      const candidates = byDate[dt];
-      if (cfg.multiSub) {
-        // Store all sub-rows for AU
-        return {
-          date: dt,
-          subs: candidates.map(c => ({
-            sub: c.sub,
-            h: c.heroes.map(h => h.code || ''),
-            n: c.heroes.map(h => h.name || '')
-          }))
-        };
-      }
-      const chosen = candidates[0];
-      return {
-        date: dt,
-        h: chosen.heroes.map(h => h.code || ''),
-        n: chosen.heroes.map(h => h.name || '')
-      };
-    });
+function isId(v) {
+  return v && v.length > 3 && !/^\d{1,2}[\/\-]/.test(v) && !/^\d{4}-\d{2}/.test(v) && v !== '0';
+}
+function isTourId(v) {
+  return v && (v.toLowerCase().startsWith('tour-') || /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(v));
+}
+function dedup(a) { return [...new Set(a.filter(Boolean))]; }
 
-    const codes = parsedData[regionKey].reduce((s,r)=>s+r.h.filter(Boolean).length,0);
-    console.log(`${regionKey}: ${parsedData[regionKey].length} dates, ${codes} codes`);
+// ═══════════════════════════════════════
+// TABLEAU LOADER
+// ═══════════════════════════════════════
+function loadTableau(e) {
+  const file = e.target.files[0]; if (!file) return;
+  // Try UTF-16 LE first (standard Tableau export)
+  const r = new FileReader();
+  r.onload = ev => parseTableau(ev.target.result, file.name);
+  r.onerror = () => {
+    // fallback UTF-8
+    const r2 = new FileReader();
+    r2.onload = ev2 => parseTableau(ev2.target.result, file.name);
+    r2.readAsText(file, 'UTF-8');
+  };
+  r.readAsText(file, 'UTF-16LE');
+  e.target.value = '';
+}
+
+function parseTableau(text, fname) {
+  text = text.replace(/^\uFEFF|^\uFFFE/, '');
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) { toast('Tableau file is empty'); return; }
+
+  const sep = lines[0].includes('\t') ? '\t' : ',';
+  const headers = splitLine(lines[0], sep).map(h => h.trim().toLowerCase().replace(/"/g,''));
+
+  const colId   = fc(headers, ['offer id','offerid','id','offer_id','property id','deal id']);
+  const colV    = fc(headers, ['views','page views','pageviews']);
+  const colB    = fc(headers, ['bookings','booking','orders','transactions']);
+  const colC    = fc(headers, ['conversion rate','cvr','conversion','conv rate','conv_rate','cr']);
+
+  if (colId === -1) { toast('Cannot find Offer ID column — check CSV headers'); return; }
+
+  // Aggregate: sum views & bookings, average CVR
+  const agg = new Map();
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitLine(lines[i], sep);
+    const id = (cols[colId]||'').replace(/"/g,'').trim().toLowerCase();
+    if (!id) continue;
+    if (!agg.has(id)) agg.set(id, {v:0,b:0,c:0,cn:0});
+    const rec = agg.get(id);
+    rec.v  += pn(cols[colV]);
+    rec.b  += pn(cols[colB]);
+    const cv = pn(cols[colC]);
+    if (cv>0){ rec.c += cv; rec.cn++; }
+  }
+
+  // Normalise and score
+  let maxV=1, maxB=1, maxC=1;
+  agg.forEach(r => { if(r.v>maxV)maxV=r.v; if(r.b>maxB)maxB=r.b; });
+  // CVR might be 0–1 or 0–100, normalise separately
+  agg.forEach(r => { const avg=r.cn>0?r.c/r.cn:0; if(avg>maxC)maxC=avg; });
+
+  const stats = new Map();
+  agg.forEach((rec, id) => {
+    const avgCvr = rec.cn > 0 ? rec.c/rec.cn : 0;
+    const score = Math.round(((rec.v/maxV)+(rec.b/maxB)+(avgCvr/maxC))/3*100);
+    stats.set(id, {views:rec.v, bookings:rec.b, cvr:avgCvr, score});
   });
 
-  launchApp(fname);
+  S.stats = stats;
+  setStatus('tab-status', '✓ ' + fname + ' (' + stats.size + ' offers)', true);
+  markDone('dz-tableau');
+  if (S.wb) applyMix();
+  else renderAll();
+  toast('Stats loaded · ' + stats.size + ' offers');
 }
 
-// ── AU SUB-PANEL ─────────────────────────────────────────────────────────────
-function updateAuSubPanel() {
-  const panel = document.getElementById('auSubPanel');
-  const grid = document.getElementById('auSubGrid');
+function fc(headers, candidates) {
+  for (const c of candidates) { const i = headers.findIndex(h=>h.includes(c)); if(i>-1) return i; }
+  return -1;
+}
+function splitLine(line, sep) {
+  if (sep==='\t') return line.split('\t');
+  const res=[]; let cur=''; let q=false;
+  for(const c of line){ if(c==='"')q=!q; else if(c===','&&!q){res.push(cur);cur='';} else cur+=c; }
+  res.push(cur); return res;
+}
+function pn(v) { if(!v) return 0; const n=parseFloat(String(v).replace(/['",%]/g,'')); return isNaN(n)?0:n; }
+
+// ═══════════════════════════════════════
+// MIX ENGINE
+// ═══════════════════════════════════════
+function applyMix() {
+  REGIONS.forEach(r => { S.mixed[r.key] = buildMix(r.key); });
+  renderAll();
+}
+
+function buildMix(key) {
+  const raw = S.raw[key];
+  const h1s = [...raw.h1];
+
+  // Most recent H1 = last in list, pinned to position 1
+  const pinned  = h1s.length ? h1s[h1s.length-1] : null;
+  const otherH1 = h1s.slice(0,-1);
+
+  // Pool H2s & H3s, shuffle together
+  const pool = shuffle([...otherH1, ...raw.h2, ...raw.h3]);
+
+  const list = [];
+  if (pinned) list.push({ id:pinned, tag:'H1', pinned:true });
+  pool.forEach(id => {
+    const tag = raw.h1.includes(id) ? 'H1' : raw.h2.includes(id) ? 'H2' : 'H3';
+    list.push({ id, tag, pinned:false });
+  });
+
+  // Attach stats
+  list.forEach(item => attachStats(item));
+
+  // Sort non-pinned by score descending (if stats loaded)
+  if (S.stats && list.length > 1) {
+    const pin = list[0].pinned ? list.splice(0,1)[0] : null;
+    list.sort((a,b) => (b.score||0) - (a.score||0));
+    if (pin) list.unshift(pin);
+  }
+  return list;
+}
+
+function attachStats(item) {
+  const s = S.stats ? S.stats.get(item.id.toLowerCase()) : null;
+  item.score    = s ? s.score    : null;
+  item.views    = s ? s.views    : null;
+  item.bookings = s ? s.bookings : null;
+  item.cvr      = s ? s.cvr      : null;
+}
+
+function shuffle(a) {
+  const arr=[...a];
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderAll() {
+  renderSidebar();
+  renderRegionNav();
+  renderOverview();
+  REGIONS.forEach(r => renderRegion(r.key));
+}
+
+function renderSidebar() {
+  document.getElementById('sb-region-label').textContent = REGIONS.find(r=>r.key===S.activeRegion)?.label || '';
+  const el = document.getElementById('sb-offers');
+  const list = S.mixed[S.activeRegion] || [];
+  if (!list.length) { el.innerHTML = '<div style="padding:12px;font-size:10px;color:var(--text3);">No offers loaded</div>'; return; }
+  el.innerHTML = list.map((item,i) => {
+    const sc = item.score;
+    const cls = sc===null ? '' : sc>=70 ? 'high' : sc>=40 ? 'mid' : 'low';
+    return `<div class="o-row">
+      <span class="o-pos ${item.pinned?'pinned':''}">${i+1}</span>
+      <span class="o-tag ${item.tag.toLowerCase()}">${item.tag}</span>
+      <span class="o-id" title="${item.id}">${item.id}</span>
+      ${sc!==null ? `<span class="o-score ${cls}">${sc}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderRegionNav() {
+  document.getElementById('region-nav').innerHTML = REGIONS.map(r => {
+    const n = (S.mixed[r.key]||[]).length;
+    return `<div class="rn-item ${S.activeRegion===r.key?'active':''}" onclick="setActive('${r.key}')">
+      <span class="rn-item-name">${r.label}</span>
+      <span class="rn-item-count">${n}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderOverview() {
+  const hasData = !!S.wb;
+  document.getElementById('ov-empty').style.display = hasData ? 'none' : 'block';
+  document.getElementById('ov-content').style.display = hasData ? 'block' : 'none';
+  if (!hasData) return;
+
+  let total = 0;
+  REGIONS.forEach(r => total += (S.mixed[r.key]||[]).length);
+  const matched = S.stats ? countMatched() : 0;
+
+  document.getElementById('sum-grid').innerHTML = `
+    <div class="sum-card"><div class="sum-val" style="color:var(--accent);">${REGIONS.length}</div><div class="sum-label">Regions</div></div>
+    <div class="sum-card"><div class="sum-val">${total}</div><div class="sum-label">Total Offers</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${S.stats?'var(--green)':'var(--text3)'};">${S.stats?S.stats.size:'—'}</div><div class="sum-label">Stats loaded</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:var(--blue);">${matched}</div><div class="sum-label">Offers matched</div></div>
+  `;
+
+  const rows = REGIONS.map(r => {
+    const list = S.mixed[r.key]||[];
+    const pin = list.find(x=>x.pinned);
+    const m = list.filter(x=>x.score!==null).length;
+    return `<tr>
+      <td style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">${r.label}</td>
+      <td><span class="mono">${list.length}</span></td>
+      <td><span class="mono" style="font-size:9px;">${pin ? pin.id : '—'}</span></td>
+      <td><span class="mono" style="color:${S.stats?'var(--green)':'var(--text3)'};">${m}/${list.length}</span></td>
+      <td><button style="font-size:10px;padding:3px 8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);border-radius:var(--radius);cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;" onclick="goRegion('${r.key}')">View →</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('ov-table').innerHTML = `
+    <thead><tr><th>Region</th><th>Offers</th><th>Pinned H1</th><th>Stats</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  `;
+}
+
+function countMatched() {
+  let n=0;
+  REGIONS.forEach(r => n += (S.mixed[r.key]||[]).filter(x=>x.score!==null).length);
+  return n;
+}
+
+function renderRegion(key) {
+  const panel = document.getElementById('panel-' + key);
   if (!panel) return;
+  const list = S.mixed[key] || [];
+  const region = REGIONS.find(r=>r.key===key);
 
-  const auActive = activeRegions.has('AU');
-  panel.style.display = auActive ? 'block' : 'none';
-  if (!auActive) return;
-
-  // Build buttons if not already built
-  if (grid.children.length === 0) {
-    Object.keys(AU_SUB_GROUPS).forEach(label => {
-      const btn = document.createElement('button');
-      btn.className = 'toggle-btn' + (activeAuSubs.has(label) ? ' active' : '');
-      btn.style.fontSize = '11px';
-      btn.textContent = label;
-      btn.onclick = () => {
-        activeAuSubs.has(label) ? activeAuSubs.delete(label) : activeAuSubs.add(label);
-        btn.classList.toggle('active');
-      };
-      grid.appendChild(btn);
-    });
-  }
-}
-
-function auSubMatches(subStr) {
-  const lower = subStr.toLowerCase();
-  for (const [label, patterns] of Object.entries(AU_SUB_GROUPS)) {
-    if (!activeAuSubs.has(label)) continue;
-    if (patterns.some(p => lower === p || lower.startsWith(p))) return true;
-  }
-  return false;
-}
-
-// ── APP ───────────────────────────────────────────────────────────────────────
-function launchApp(fname) {
-  document.getElementById('uploadScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'block';
-  document.getElementById('fileNameBadge').textContent = fname || 'file.xlsx';
-
-  // Region buttons
-  const rg = document.getElementById('regionGrid');
-  rg.innerHTML = '';
-  Object.keys(REGION_CONFIGS).forEach(r => {
-    const btn = document.createElement('button');
-    btn.className = 'toggle-btn' + (activeRegions.has(r) ? ' active' : '');
-    btn.textContent = REGION_LABELS[r];
-    btn.onclick = () => {
-      activeRegions.has(r) ? activeRegions.delete(r) : activeRegions.add(r);
-      btn.classList.toggle('active');
-      updateAuSubPanel();
-    };
-    rg.appendChild(btn);
-  });
-
-  // AU Sub-region buttons
-  updateAuSubPanel();
-
-  // Hero buttons
-  const hg = document.getElementById('heroGrid');
-  hg.innerHTML = '';
-  ['Hero 1','Hero 2','Hero 3','Hero 4'].forEach((lbl,i) => {
-    const btn = document.createElement('button');
-    btn.className = 'toggle-btn hero' + (activeHeroes.has(i) ? ' active' : '');
-    btn.textContent = lbl;
-    btn.onclick = () => {
-      activeHeroes.has(i) ? activeHeroes.delete(i) : activeHeroes.add(i);
-      btn.classList.toggle('active');
-      // Update slider label highlight
-      const sliderLabel = document.querySelector(`.hero-slider-label[data-hero="${i}"]`);
-      if (sliderLabel) sliderLabel.classList.toggle('active-hero', activeHeroes.has(i));
-    };
-    hg.appendChild(btn);
-  });
-
-  // Per-hero sliders
-  const hs = document.getElementById('heroSliders');
-  hs.innerHTML = '';
-  ['Hero 1','Hero 2','Hero 3','Hero 4'].forEach((lbl, i) => {
-    const row = document.createElement('div');
-    row.className = 'hero-slider-row';
-    row.innerHTML = `
-      <span class="hero-slider-label${activeHeroes.has(i) ? ' active-hero' : ''}" data-hero="${i}">${lbl}</span>
-      <input type="range" min="1" max="40" value="${heroMaxCounts[i]}" id="heroSlider${i}" />
-      <div class="hero-slider-val" id="heroSliderVal${i}">${heroMaxCounts[i]}</div>
-    `;
-    row.querySelector(`#heroSlider${i}`).oninput = function() {
-      heroMaxCounts[i] = parseInt(this.value);
-      document.getElementById(`heroSliderVal${i}`).textContent = this.value;
-    };
-    hs.appendChild(row);
-  });
-  const today = new Date();
-  const prior = new Date(today);
-  prior.setDate(prior.getDate() - 30);
-  document.getElementById('dateTo').value = today.toISOString().slice(0,10);
-  document.getElementById('dateFrom').value = prior.toISOString().slice(0,10);
-
-  const out = document.getElementById('codeOutput');
-  out.className = 'code-output empty';
-  out.textContent = 'Select regions, hero positions & date range — then hit Extract.';
-  document.getElementById('breakdownSection').style.display = 'none';
-  document.getElementById('statsBar').style.display = 'none';
-}
-
-// ── EXTRACT ───────────────────────────────────────────────────────────────────
-function runExtract() {
-  const dateFrom = document.getElementById('dateFrom').value;
-  const dateTo   = document.getElementById('dateTo').value;
-  if (!dateFrom || !dateTo) return alert('Set both dates.');
-  if (!activeRegions.size) return alert('Select at least one region.');
-  if (!activeHeroes.size) return alert('Select at least one Hero position.');
-
-  // Collect entries: { date, region, heroIdx, code, name }
-  // Per hero, cap at heroMaxCounts[hi] rows (most recent first within each region+hero combo)
-  const entries = []; // ordered collection preserving date desc per region+hero
-
-  Object.keys(REGION_CONFIGS).forEach(region => {
-    if (!activeRegions.has(region)) return;
-    const rows = parsedData[region] || [];
-
-    const filtered = rows
-      .filter(r => r.date >= dateFrom && r.date <= dateTo)
-      .sort((a,b) => b.date.localeCompare(a.date)); // most recent first
-
-    activeHeroes.forEach(hi => {
-      let count = 0;
-      filtered.forEach(row => {
-        if (count >= heroMaxCounts[hi]) return;
-
-        // AU has multi-sub rows
-        if (row.subs) {
-          const matchingSubs = row.subs.filter(s => auSubMatches(s.sub));
-          // Pick first matching sub that has a code for this hero
-          for (const sub of matchingSubs) {
-            const code = sub.h[hi];
-            if (!code) continue;
-            entries.push({ date: row.date, region, heroIdx: hi, code, name: sub.n[hi], subLabel: sub.sub });
-            count++;
-            break; // one entry per date per hero
-          }
-          return;
-        }
-
-        const code = row.h[hi];
-        if (!code) return;
-        entries.push({ date: row.date, region, heroIdx: hi, code, name: row.n[hi] });
-        count++;
-      });
-    });
-  });
-
-  // Build byDate lookup for breakdown
-  const byDate = {};
-  entries.forEach(e => {
-    if (!byDate[e.date]) byDate[e.date] = [];
-    byDate[e.date].push(e);
-  });
-
-  // For the flat output list: sort by date desc, deduplicate codes
-  // Group all entries by date desc, within each date preserve region/hero order
-  const datesSorted = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
-  let orderedCodes = [];
-  datesSorted.forEach(dt => {
-    byDate[dt].forEach(e => {
-      if (!orderedCodes.includes(e.code)) orderedCodes.push(e.code);
-    });
-  });
-
-  // Apply randomise if selected
-  if (outputOrder === 'random') {
-    for (let i = orderedCodes.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [orderedCodes[i], orderedCodes[j]] = [orderedCodes[j], orderedCodes[i]];
-    }
-  }
-
-  render(orderedCodes, byDate);
-}
-
-function render(uniqueCodes, byDate) {
-  const dateKeys = Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
-
-  document.getElementById('statsBar').style.display = 'flex';
-  document.getElementById('statCodes').textContent = uniqueCodes.length;
-  document.getElementById('statDates').textContent = dateKeys.length;
-  document.getElementById('statRegions').textContent = activeRegions.size;
-
-  const outEl = document.getElementById('codeOutput');
-  if (!uniqueCodes.length) {
-    outEl.className = 'code-output empty';
-    outEl.textContent = 'No codes found for this selection.';
-    document.getElementById('breakdownSection').style.display = 'none';
+  if (!S.wb) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">${region.label} — no data</div><div class="empty-sub">Upload the Email Schedule to populate this region.</div></div>`;
     return;
   }
 
-  outEl.className = 'code-output';
-  let str;
-  if (outputMode === 'comma') str = uniqueCodes.join(', ');
-  else if (outputMode === 'newline') str = uniqueCodes.join('\n');
-  else str = JSON.stringify(uniqueCodes, null, 2);
-  outEl.textContent = str;
-  document.getElementById('formatNote').textContent = `${uniqueCodes.length} unique codes · ${outputOrder === 'random' ? 'randomised' : 'most recent first'}`;
+  const statsBanner = S.stats
+    ? `<div class="banner info">📊 Ranked by equal-weight score (views + bookings + CVR). Pinned H1 locked at #1. Drag rows to manually reorder.</div>`
+    : `<div class="banner warn">No Tableau stats — showing schedule order. Upload a Tableau CSV to rank by performance.</div>`;
 
-  // Breakdown
-  document.getElementById('breakdownSection').style.display = 'block';
-  const grid = document.getElementById('breakdownGrid');
-  grid.innerHTML = '';
+  const fmtN = n => n==null?'—':n>=1000?(n/1000).toFixed(1)+'k':String(Math.round(n));
+  const fmtC = n => {
+    if (n==null) return '—';
+    // if already in percent form (>1) vs decimal
+    const pct = n < 1 ? n*100 : n;
+    return pct.toFixed(2) + '%';
+  };
 
-  // Group by region
-  const byRegion = {};
-  dateKeys.forEach(dt => {
-    byDate[dt].forEach(e => {
-      if (!byRegion[e.region]) byRegion[e.region] = {};
-      if (!byRegion[e.region][dt]) byRegion[e.region][dt] = [];
-      byRegion[e.region][dt].push(e);
-    });
+  const bodyRows = list.map((item,i) => {
+    const sc = item.score;
+    const scColor = sc==null?'var(--text3)':sc>=70?'var(--green)':sc>=40?'var(--amber)':'var(--text3)';
+    const barW = sc!=null ? sc : 0;
+
+    return `<tr draggable="true" data-i="${i}" data-rk="${key}"
+        ondragstart="dStart(event)" ondragover="dOver(event)" ondrop="dDrop(event)" ondragleave="dLeave(event)">
+      <td style="width:22px;"><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+      <td style="width:26px;"><div class="rank-dot ${i===0?'top':''}">${i+1}</div></td>
+      <td style="width:36px;"><span class="o-tag ${item.tag.toLowerCase()}">${item.tag}</span></td>
+      <td>
+        <div class="mono" style="font-size:11px;color:var(--text);">${item.id}</div>
+        ${item.pinned?'<div class="pin-badge">📌 Pinned</div>':''}
+      </td>
+      <td style="width:90px;">
+        <div class="sbar-wrap">
+          <div class="sbar"><div class="sbar-fill" style="width:${barW}%;background:${scColor};"></div></div>
+          <span class="sval" style="color:${scColor};">${sc!=null?sc:'—'}</span>
+        </div>
+      </td>
+      <td style="width:70px;"><span class="mono">${fmtN(item.views)}</span></td>
+      <td style="width:70px;"><span class="mono">${fmtN(item.bookings)}</span></td>
+      <td style="width:70px;"><span class="mono">${fmtC(item.cvr)}</span></td>
+      <td style="width:28px;">
+        <button onclick="removeOffer('${key}',${i})"
+          style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;line-height:1;padding:0 3px;"
+          onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--text3)'">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  panel.innerHTML = `
+    ${statsBanner}
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="card-title" style="margin-bottom:0;">${region.label} — ${list.length} offers</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn" style="font-size:10px;padding:4px 10px;" onclick="openAdd('${key}')">+ Add</button>
+          <button class="btn" style="font-size:10px;padding:4px 10px;" onclick="reshuffleRegion('${key}')">⟳ Reshuffle</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="ot">
+          <thead><tr>
+            <th></th><th>#</th><th>Type</th><th>Offer ID</th>
+            <th>Score</th><th>Views</th><th>Bookings</th><th>CVR</th><th></th>
+          </tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════
+let _di=null, _dk=null;
+
+function dStart(e){
+  _di=parseInt(e.currentTarget.dataset.i);
+  _dk=e.currentTarget.dataset.rk;
+  e.currentTarget.classList.add('row-dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function dOver(e){
+  e.preventDefault();
+  document.querySelectorAll('.row-drag-over').forEach(el=>el.classList.remove('row-drag-over'));
+  e.currentTarget.classList.add('row-drag-over');
+}
+function dLeave(e){ e.currentTarget.classList.remove('row-drag-over'); }
+function dDrop(e){
+  e.preventDefault();
+  document.querySelectorAll('.row-drag-over').forEach(el=>el.classList.remove('row-drag-over'));
+  document.querySelectorAll('.row-dragging').forEach(el=>el.classList.remove('row-dragging'));
+  const ti=parseInt(e.currentTarget.dataset.i);
+  const tk=e.currentTarget.dataset.rk;
+  if(_di===null||_di===ti||_dk!==tk) return;
+  const list=S.mixed[_dk];
+  const [moved]=list.splice(_di,1);
+  list.splice(ti,0,moved);
+  if(ti!==0) moved.pinned=false;
+  renderRegion(_dk);
+  renderSidebar();
+  _di=null; _dk=null;
+}
+
+// ═══════════════════════════════════════
+// OFFER ACTIONS
+// ═══════════════════════════════════════
+function removeOffer(key, idx) {
+  S.mixed[key].splice(idx,1);
+  renderRegion(key); renderSidebar(); renderRegionNav();
+}
+
+function reshuffleRegion(key) {
+  S.mixed[key] = buildMix(key);
+  renderRegion(key); renderSidebar();
+}
+
+// ═══════════════════════════════════════
+// ADD MODAL
+// ═══════════════════════════════════════
+function openAdd(key) {
+  S.addRegion = key;
+  const r = REGIONS.find(x=>x.key===key);
+  document.getElementById('add-sub').textContent = 'Adding to: ' + r.label;
+  document.getElementById('add-id').value = '';
+  document.getElementById('add-type').value = 'H1';
+  document.getElementById('overlay-add').classList.add('open');
+}
+function closeAdd() { document.getElementById('overlay-add').classList.remove('open'); }
+function confirmAdd() {
+  const id = document.getElementById('add-id').value.trim();
+  if (!id) { alert('Enter an offer ID'); return; }
+  const tag = document.getElementById('add-type').value;
+  const item = { id, tag, pinned:false };
+  attachStats(item);
+  S.mixed[S.addRegion].push(item);
+  closeAdd();
+  renderRegion(S.addRegion); renderSidebar(); renderRegionNav();
+  toast('Offer added ✓');
+}
+
+// ═══════════════════════════════════════
+// TAB + REGION NAVIGATION
+// ═══════════════════════════════════════
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  const rMap = { au:'au','au-tours':'au-tours',nz:'nz',us:'us',asia:'asia',za:'za' };
+  if (rMap[name]) { S.activeRegion=rMap[name]; renderSidebar(); renderRegionNav(); }
+}
+
+function goRegion(key) {
+  const labelMap = { au:'AU','au-tours':'AU Tours',nz:'NZ',us:'US',asia:'Asia / SG',za:'South Africa' };
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.trim() === labelMap[key]) t.click();
   });
+}
 
-  Object.entries(byRegion).forEach(([region, dateMap]) => {
-    const sortedDates = Object.keys(dateMap).sort((a,b)=>b.localeCompare(a));
-    const total = sortedDates.reduce((s,d)=>s+dateMap[d].length,0);
-    const card = document.createElement('div');
-    card.className = 'breakdown-card';
-    const hdr = document.createElement('div');
-    hdr.className = 'card-header';
-    hdr.innerHTML = `<div class="card-region">${REGION_LABELS[region]}</div><div class="card-meta">${total} codes · ${sortedDates.length} dates</div>`;
-    card.appendChild(hdr);
+function setActive(key) {
+  S.activeRegion = key;
+  renderSidebar(); renderRegionNav();
+  goRegion(key);
+}
 
-    sortedDates.forEach(dt => {
-      const row = document.createElement('div');
-      row.className = 'card-row';
-      row.innerHTML = `<div class="card-date">${dt.slice(5).replace('-','/')}</div><div class="card-codes"></div>`;
-      const codesEl = row.querySelector('.card-codes');
-      dateMap[dt].forEach(e => {
-        const chip = document.createElement('span');
-        chip.className = 'code-chip';
-        chip.title = e.name || e.code;
-        chip.innerHTML = `<span class="hero-tag">H${e.heroIdx+1}</span>${e.code}`;
-        chip.onclick = ev => copyChip(e.code, ev);
-        codesEl.appendChild(chip);
-      });
-      card.appendChild(row);
-    });
-    grid.appendChild(card);
+// ═══════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════
+function setStatus(id, text, ok) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'status-pill' + (ok?' ok':'');
+}
+
+function markDone(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('done');
+  el.querySelector('.uz-icon').textContent = '✓';
+}
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className='toast'; el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 2800);
+}
+
+// Drag & drop on upload zones
+['dz-schedule','dz-tableau'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('dragover', e=>{ e.preventDefault(); el.classList.add('drag-over'); });
+  el.addEventListener('dragleave', ()=>el.classList.remove('drag-over'));
+  el.addEventListener('drop', e=>{
+    e.preventDefault(); el.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0]; if (!file) return;
+    if (id==='dz-schedule') loadSchedule({target:{files:[file]}});
+    else loadTableau({target:{files:[file]}});
   });
-}
+});
 
-function setOrder(order, btn) {
-  outputOrder = order;
-  document.querySelectorAll('#orderChron, #orderRand').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function copyOutput() {
-  const text = document.getElementById('codeOutput').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy All'; btn.classList.remove('copied'); }, 1800);
-  });
-}
-
-function copyChip(code, ev) {
-  navigator.clipboard.writeText(code);
-  const tt = document.getElementById('tooltip');
-  tt.style.left = ev.clientX + 'px';
-  tt.style.top = ev.clientY + 'px';
-  tt.classList.add('show');
-  setTimeout(() => tt.classList.remove('show'), 1100);
-}
-
-function setMode(mode, btn) {
-  outputMode = mode;
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+renderRegionNav();
 </script>
 </body>
 </html>
